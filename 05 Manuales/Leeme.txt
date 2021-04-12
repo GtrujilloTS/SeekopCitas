@@ -1,0 +1,10 @@
+Para el area de soporte o desarrollo(encargada de dar de alta la Interfaz)
+Se usaran ciertos parametros propios de la interfaz los cuales beben poseer el siguiente nombre con la informacion para cada sucursal:
+
+Usuario:  Usario de Intelisis que tendra el permiso de afectar las citas de servicio
+AgenteServicio:	Agente de servicio(usado por validaciones de intelisis en caso de no tener una validacion de este tipo no poner nada)
+ClienteSeekop: Se requiere que la Agencia de de alta un cliente generico que se usara para citas Seekop el cula una vez creado se tendra qeu agregar en este campo.
+EndPointConcludeAppointments: EndPoint proporcionado por Intelisis Solutions (Consultar con Area de Desarrollo).
+
+
+Ver Video de Alta de interfaz SeekopCitas

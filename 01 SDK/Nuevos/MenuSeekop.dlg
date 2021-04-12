@@ -1,0 +1,39 @@
+
+[Dialogo]
+Clave=MenuSeekop
+Nombre=Menú
+Icono=14
+TipoDialogo=Menú
+Modulos=(Todos)
+Fuente={Tahoma, 8, Negro, []}
+MenuEstilo=Lista Opciones
+MenuColumnas=1
+AccionesTamanoBoton=15x5
+AccionesDerecha=S
+
+ListaAcciones=CatControl
+[Acciones.CatControl]
+Nombre=CatControl
+Boton=0
+NombreDesplegar=Control Seekop
+EnMenu=S
+EnBarraAcciones=S
+Activo=S
+Visible=S
+BarraBtnFondo=Plata
+BarraBtnFuente={MS Sans Serif, 8, Negro, []}
+BarraBtnTxtAlign=Izquierda
+BarraBtnTxtPos=Arriba
+BarraBtnSubtitFuente={MS Sans Serif, 8, Negro, []}
+BarraBtnDescripFuente={MS Sans Serif, 8, Negro, []}
+BarraBtnImgPos=Arriba
+BarraBtnImgAlign=Izquierda
+BarraBtnSubtituloAli=Izquierda
+BarraBtnDescripcionAli=Izquierda
+BarraBtnSubtituloPos=Arriba
+BarraBtnDescripcionPos=Arriba
+AccionSecTextoFuente={MS Sans Serif, 8, Negro, []}
+AccionSecColor=Plata
+AccionSecAli=Izquierda
+TipoAccion=Formas
+ClaveAccion=CA_SKTableroControl
