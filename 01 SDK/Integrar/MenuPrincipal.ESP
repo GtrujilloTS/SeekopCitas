@@ -1,35 +1,6 @@
 [MenuPrincipal.dlg/Dialogo.ListaAcciones]
-Herramienta.Ventanilla=Herramienta.Sepa
-Herramienta.Sepa=Herramienta.Seekop
+Herramienta.Ventanilla=Herramienta.Seekop
 Herramienta.Seekop=(Fin)
-
-[MenuPrincipal.dlg/Acciones.Herramienta.Sepa]
-Nombre=Herramienta.Sepa
-Boton=0
-NombreDesplegar=&Menu SePa
-EnMenu=S
-TipoAccion=Dialogos
-Activo=S
-BarraBtnFondo=Plata
-BarraBtnFuente={MS Sans Serif, 8, Negro, []}
-BarraBtnTxtAlign=Izquierda
-BarraBtnTxtPos=Arriba
-BarraBtnSubtitFuente={MS Sans Serif, 8, Negro, []}
-BarraBtnDescripFuente={MS Sans Serif, 8, Negro, []}
-BarraBtnImgPos=Arriba
-BarraBtnImgAlign=Izquierda
-BarraBtnSubtituloAli=Izquierda
-BarraBtnDescripcionAli=Izquierda
-BarraBtnSubtituloPos=Arriba
-BarraBtnDescripcionPos=Arriba
-AccionSecTextoFuente={MS Sans Serif, 8, Negro, []}
-AccionSecColor=Plata
-AccionSecAli=Izquierda
-ClaveAccion=MenuSePa
-VisibleCondicion=SQL(<T>SELECT dbo.fnCA_CatParametrosEmpresaExiste(:tEmpresa,:tClave)<T>,Empresa,<T>SePa<T>)=VERDADERO
-
-
-
 
 [MenuPrincipal.dlg/Acciones.Herramienta.Seekop]
 Nombre=Herramienta.Seekop

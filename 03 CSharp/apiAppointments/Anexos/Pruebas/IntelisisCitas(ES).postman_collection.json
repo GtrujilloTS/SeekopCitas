@@ -1,0 +1,499 @@
+{
+	"info": {
+		"_postman_id": "9010c5b2-9de2-4205-abf9-cb3acff0b28f",
+		"name": "IntelisisCitas (ES)",
+		"description": "# Api para la gestion de citas para servicios anexos a intelisis",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Autentificador",
+			"item": [
+				{
+					"name": "Auth",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept-encoding": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "IdDistribuidor",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/Auth/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"Auth",
+								""
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "## Acción para autentificar\r\n\r\n## Endpoint para Autos `api/Auth/`\r\n\r\n*En este endpoint se podra realizar la autentificación del usuario y generación de su token.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| username      | Nombre de la cuenta de usuario |\r\n| password      | Contraseña asignada por el usuario |\r\n| idDistribuidor| Identificador del distribuidor al que pertenece el usuario |\r\n\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| token         | Token del usuario |\r\n| status        | Status de la transaccion |\r\n| idDistribuidor| Identificador del distribuidor al que pertenece el usuario |\r\n\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Usuario no existe en esa sucursal  |\r\n| 2                  | Contraseña para ese usuario no coincide |\r\n\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"token\": \"X\",\r\n    \"IdDistribuidor\": 76,\r\n    \"status\": \"0\"\r\n}\r\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Autentificador"
+		},
+		{
+			"name": "Catalogos",
+			"item": [
+				{
+					"name": "Autos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token X",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "eyJpZHN1Y3Vyc2FsIjoiNzYifQ=="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/vehiculos/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"vehiculos",
+								""
+							]
+						},
+						"description": "# Catálogo de autos\r\n\r\n## Endpoint para Autos `api/vehiculos/`\r\n\r\n*En este endpoint se presentaran los vehiculos que existen dentro de intelisis por modelo.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Identificador por sucursal |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Mensaje personalizado |\r\n| status        | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro       | Descripción       |\r\n| --------------- |:-----------------:|\r\n| Clave           | Clave del modelo de vehículo |\r\n| Descripcion     | Descripción del modelo de vehículo |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Sucursal no existe           |\r\n| 2                  | Configuraciones de sucursal no optimas para la obtención de sus vehiculos por modelo |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Clave\": \"350Z\",\r\n            \"Descripcion\": \"350Z\"\r\n        },\r\n        {\r\n            \"Clave\": \"A32\",\r\n            \"Descripcion\": \"MAXIMA\"\r\n        },\r\n        ...\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "CategoriasServicio",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token X",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "eydpZHN1Y3Vyc2FsJzogJzc2J30="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/categorias/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"categorias",
+								""
+							]
+						},
+						"description": "# Catálogo de Categorias de servicio\r\n\r\n## Endpoint para Autos `api/categorias/`\r\n\r\n*En este endpoint se presentaran las categorias que existen dentro de intelisis.\r\n*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Clave de agencia |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Mensaje personalizado |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro       | Descripción       |\r\n| --------------- |:-----------------:|\r\n| Categoria            | Nombre de la categoria |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Cliente no existe           |\r\n| 2                  | Configuraciones de la sucursal no optimas para la obtención de las categorias |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Categoria\": \"Mantenimiento\"\r\n        },\r\n        {\r\n            \"Categoria\": \"Reparacion\"\r\n        }\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "TiposServicio",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token X",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "eydpZHN1Y3Vyc2FsJzogJzc2J30="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/tipos/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"tipos",
+								""
+							]
+						},
+						"description": "# Catálogo de Tipos de servicio\r\n\r\n## Endpoint para Autos `api/tipos/`\r\n\r\n*En este endpoint se presentaran los tipos de servicio los cuales se cargaran de forma informativa a la cita y se gestionan dentro de intelisis.\r\n*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Clave de agencia |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Mensaje personalizado |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro       | Descripción       |\r\n| --------------- |:-----------------:|\r\n| Clave           | clave del tipo de servicio |\r\n| Descripcion     | Descripción del tipo de servicio |\r\n| Grupo           | Categoria a la que pertenece |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Sucursal no existe           |\r\n| 2                  | Configuraciones de la sucursal no optimas para la obtención de los tipos de servicio |\r\n\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Clave\": \"NSERV10KM\",\r\n            \"Descripcion\": \"SERVICIO DE 10 MIL KM\",\r\n            \"Grupo\": \"Mantenimiento\"\r\n        },\r\n        {\r\n            \"Clave\": \"NSERV100KM\",\r\n            \"Descripcion\": \"SERVICIO DE 100 MIL KM\",\r\n            \"Grupo\": \"Mantenimiento\"\r\n        },\r\n        {\r\n            \"Clave\": \"NSERV105KM\",\r\n            \"Descripcion\": \"SERVICIO DE 105 MIL KM\",\r\n            \"Grupo\": \"Mantenimiento\"\r\n        },\r\n        ...\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cliente",
+			"item": [
+				{
+					"name": "CrearCliente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token X",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ25vbWJyZSc6ICdQZWRybycsCiAgICAnYXBhdGVybm8nOiAnUm9kcmlndWV6JywKICAgICdhbWF0ZXJubyc6ICdMb3BlJywKICAgICdjcCc6ICcnLAogICAgJ2VtYWlsJzogJycsCiAgICAndGVsZWZvbm8nOiAnJwogIH0="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/crearcliente/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"crearcliente",
+								""
+							]
+						},
+						"description": "# Acción para la creación de las citas\r\n\r\n## Endpoint para Autos `api/creacliente/`\r\n\r\n*En este endpoint registrara los clientes nuevos al sistema de intelisis.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Identificador de la agencia |\r\n| nombre        | Nombres propios del cliente |\r\n| apaterno      | Apellido paterno del cliente |\r\n| amaterno      | Apellido materno del cliente |\r\n| cp            | Codigo postal de la dirección del cliente |\r\n| email         | Correo electronico del cliente |\r\n| telefono      | Telefono del cliente  |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Estatus de consulta |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| Cliente         | Clave de cliente en intelisis |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Cliente no existe           |\r\n| 2                  | Configuraciones del cliente no optimas para la obtención de los tipos de servicio en su sucursal |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Cliente\": \"SKS1\"\r\n        }\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "ObtenerCliente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token X"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ25vbWJyZSc6ICdQZWRybycsCiAgICAnYXBhdGVybm8nOiAnUm9kcmlndWV6JywKICAgICdhbWF0ZXJubyc6ICdMb3BleicKICB9"
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/cliente/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"cliente",
+								""
+							]
+						},
+						"description": "# Acción para la obtención de datos de un cliente\r\n\r\n## Endpoint para Autos `api/cliente/`\r\n\r\n*En este endpoint se obtiene la clave de los clientes en el sistema de intelisis.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Identificador de la agencia |\r\n| nombre        | Nombres propios del cliente |\r\n| apaterno      | Apellido paterno del cliente |\r\n| amaterno      | Apellido materno del cliente |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Estatus de consulta |\r\n| status        | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| Cliente         | Clave de cliente en intelisis |\r\n| Nombre         | Nombre completo de cliente en intelisis |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Cliente no existe           |\r\n| 2                  | Configuraciones del cliente no optimas para la obtención de los tipos de servicio en su sucursal |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Cliente\": \"SKS2\",\r\n            \"Nombre\": \"PEDRO RODRIGUEZ LOPEZ\"\r\n        }\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Citas",
+			"item": [
+				{
+					"name": "ObtenerCalendario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token X"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ21lcyc6ICcxJywKICAgICdhbmlvJzogJzIwMjEnCiAgfQ=="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/calendario/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"calendario",
+								""
+							]
+						},
+						"description": "# Acción para la obtención de los dias disponibles de servicio\r\n\r\n## Endpoint para Autos `api/calendario/`\r\n\r\n*En este endpoint se presentaran las horas disponibles para crear citas que dentro de intelisis.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Identificador de la agencia |\r\n|mes            | Mes a consultar   |\r\n|anio           | Año a consultar   |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Mensaje personalizado |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro       | Descripción       |\r\n| --------------- |:-----------------:|\r\n| Agente   | Nombre de agente |\r\n| Fecha  | Fecha de dia disponible |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Cliente no existe           |\r\n| 2                  | Configuraciones del cliente no optimas para la obtención de los tipos de servicio en su sucursal |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Fecha\": \"2020-01-01T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-02T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-03T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-06T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-07T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-08T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-09T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-10T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-13T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-14T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-15T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-16T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-17T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-20T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-21T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-22T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-23T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-24T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-27T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-28T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-29T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-30T00:00:00\"\r\n        },\r\n        {\r\n            \"Fecha\": \"2020-01-31T00:00:00\"\r\n        }\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "ObtenerHorario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token X"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ2RpYSc6ICcyOScsCiAgICAnbWVzJzogJzEnLAogICAgJ2FuaW8nOiAnMjAyMCcKICB9"
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/horario/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"horario",
+								""
+							]
+						},
+						"description": "# Acción para la obtención de los horarios disponibles\r\n\r\n## Endpoint para Autos `api/horario/`\r\n\r\n*En este endpoint se presentaran las horas disponibles para crear citas que dentro de intelisis.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Identificador de la agencia |\r\n|mes            | Mes a consultar   |\r\n|dia            | Día a consultar   |\r\n|anio           | Año a consultar   |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Mensaje personalizado |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro       | Descripción       |\r\n| --------------- |:-----------------:|\r\n| Agente   | Nombre de agente |\r\n| Fecha  | Fecha de dia disponible |\r\n| Hora  | Hora de dia disponible |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Cliente no existe           |\r\n| 2                  | Configuraciones del cliente no optimas para la obtención de los tipos de servicio en su sucursal |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Agente\": \"VA1\",\r\n            \"Fecha\": \"2020-01-24T07:00:00\",\r\n            \"Hora\": \"07:00\"\r\n        },\r\n        {\r\n            \"Agente\": \"VA1\",\r\n            \"Fecha\": \"2020-01-24T07:20:00\",\r\n            \"Hora\": \"07:20\"\r\n        },\r\n        {\r\n            \"Agente\": \"VA1\",\r\n            \"Fecha\": \"2020-01-24T07:40:00\",\r\n            \"Hora\": \"07:40\"\r\n        },\r\n        {\r\n            \"Agente\": \"VA1\",\r\n            \"Fecha\": \"2020-01-24T08:00:00\",\r\n            \"Hora\": \"08:00\"\r\n        },\r\n        ...\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "CrearCita",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token X",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICJjbGllbnRlIjogIlNLUzYiLAogICJpZHN1Y3Vyc2FsIjogIjc2IiwKICAiZGlhIjogIjE2LzAyLzIwMjEiLAogICJhZ2VudGUiOiAiMTYzIiwKICAiaG9yYSI6ICIxMDo0MCIsCiAgInRpcG8iOiAiTWFudGVuaW1pZW50byIsCiAgIm9ic2VydmFjaW9uZXMiOiAiUHJ1ZWJhIHNlZWtvcCIsCiAgIkttIjogIjQwMDAwIiwKICAidmVoaWN1bG8iOiAiRS0yNCIsCiAgInNlcnZpY2lvc2VyaWUiOiAiMUdZRlo5UjQ5S0YxMTIyMTgiLAogICJzZXJ2aWNpb3BsYWNhcyI6ICIiLAogICJzZXJ2aWNpb21vZGVsbyI6ICIyMDIxIiwKICAiYXJ0aWN1bG9wYXF1ZXRlIjogIk5TRVJWMTBLTSIKfQ=="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/creaCitas/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"creaCitas",
+								""
+							]
+						},
+						"description": "# Acción para la creación de las citas\r\n\r\n## Endpoint para Autos `api/creaCitas/`\r\n\r\n*En este endpoint registrara las citas enviadas desde el cliente para guardarlas y afectarlas dentro de intelisis vinculados a un cliente.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| cliente       | Clave del cliente |\r\n| idsucursal    | Clave de la agencia |\r\n| dia           | dia para el cual se requiere la cita |\r\n| agente        | Clave de agente que atendera la cita |\r\n| hora          | Hora en que se atendera la cita  |\r\n| tipo          | Tipo de servicio seleccionado    |\r\n| observaciones | Campo de texto cargado para observaciones |\r\n| Km            | KM |\r\n| vehiculo      | Identificador del catalogo de autos  |\r\n| servicioserie | Vin de mi auto |\r\n| servicioplacas| Placas de mi auto |\r\n| serviciomodelo| Año de mi auto |\r\n| articulopaquete|Identificador del catalogo de tipo de servicio |\r\n\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Estatus de consulta |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| Folio         | Folio de cita confirmada |\r\n| OkRef         | Variable de mensaje al ejecutar exitosamente |\r\n| IdlogIntelisis| Identificador de registro de cita en tabla temporal antes de afectar cita |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Cliente no existe           |\r\n| 2                  | Configuraciones del cliente no optimas para la obtención de los tipos de servicio en su sucursal |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"Folio\": \"TU4308\",\r\n            \"OkRef\": \"\",\r\n            \"IdlogIntelisis\": 2537\r\n        }\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "CancelarCita",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token X"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICJmb2xpbyI6ICIyODc3NCIsCiAgImlkc3VjdXJzYWwiOiAiNzYiCn0="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/cancelarCita/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"cancelarCita",
+								""
+							]
+						},
+						"description": "# Acción para la cancelación de las citas\r\n\r\n## Endpoint para Autos `api/cancelarCita/`\r\n\r\n*En este endpoint se cancelaran las citas que existen dentro de intelisis.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| folio         | Folio de la cita |\r\n| idsucursal    | Clave de la agencia |\r\n\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Mensaje personalizado |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro       | Descripción       |\r\n| --------------- |:-----------------:|\r\n| Estatus   | Estatus CANCELADO |\r\n| Respuesta  | Mensaje de confirmacion |\r\n| Tipo  | Tipo de movimiento |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Cita no existe           |\r\n| 2                  | Configuraciones del cliente no optimas para la obtención de los tipos de servicio en su sucursal |\r\n| 3                  | Sucursal no existe           |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": {\r\n\t\"Estatus\": \"CANCELADO\",\r\n        \"Respuesta\": \"Cancelacion Exitosa\",\r\n        \"Tipo\": \"200\"\r\n        \r\n    },\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "ObtenerCitasFechas",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token X"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgImlkc3VjdXJzYWwiOiI3NiIsCiAgICAiRmVjaGFEIjoiMjAyMS0wMi0xMSIsCiAgICAiRmVjaGFBIjoiMjAyMS0wMi0xNiIKfQ=="
+						},
+						"url": {
+							"raw": "https://apinissan-dev.intelisis-solutions.com:8443/api/CitasFechas/",
+							"protocol": "https",
+							"host": [
+								"apinissan-dev",
+								"intelisis-solutions",
+								"com"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"CitasFechas",
+								""
+							]
+						},
+						"description": "# Acción para la obtención de las citas\r\n\r\n## Endpoint para Autos `api/CitasFechas/`\r\n\r\n*En este endpoint se presentaran las citas que existen dentro de intelisis filtradas por fecha.*\r\n\r\n## Request Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| idsucursal    | Clave del cliente |\r\n| fechaD        | Fecha inicial de consulta |\r\n| fechaA        | Fecha limite de consulta |\r\n\r\n## Response Params\r\n\r\n| Parametro     | Descripción   |\r\n| ------------- |:-------------:|\r\n| message       | Mensaje personalizado |\r\n| status       | Estatus de consulta |\r\n| data          | Colecciones de datos con el resultado de la consulta |\r\n\r\n## Data collections structure\r\n\r\n| Parametro       | Descripción       |\r\n| --------------- |:-----------------:|\r\n| IDCita   | Identificador de la cita |\r\n| Empresa  | Clave de empresa intelisis |\r\n| Movimiento  | Tipo de movimiento |\r\n| Folio  | Folio generado por cita confirmada |\r\n| Fecha  | Fecha requerida para cita |\r\n| Hora  | Hora requerida para cita |\r\n| Estatus  | Estatus del movimiento |\r\n| Cliente  | Clave de cliente de DMS |\r\n| Nombre  | Nombre de cliente |\r\n| Articulo  | Clave identificadora de vehiculo |\r\n| Vehiculo  | Linea de vehiculo |\r\n| Vin  | Vin del vehiculo |\r\n| Agente  | Nombre del agente |\r\n| Comentarios  | Comentarios agregados a la cita |\r\n| Sucursal  | Sucursal de DMS en que se registro |\r\n| DireccionSucursal  | Dirección de sucursal |\r\n| latitud  | Latitud de la ubicación de sucursal |\r\n| longitud  | Longitud de la ubicación de sucursal |\r\n\r\n## Error Response\r\n\r\n| Codigo de respuesta| Descripción                 |\r\n| -------------------|:---------------------------:|\r\n| 0                  | Transacción exitosa         |\r\n| 1                  | Distribuidor no existe           |\r\n| 2                  | Configuraciones de la agencia no optimas para la obtención de los tipos de servicio |\r\n\r\n## Ejemplo de respuesta exitosa\r\n```\r\n{\r\n    \"data\": [\r\n        {\r\n            \"IDCita\": 1845620,\r\n            \"Empresa\": \"TOYFA\",\r\n            \"Movimiento\": \"Cita Servicio\",\r\n            \"Folio\": \"TV84390\",\r\n            \"Fecha\": \"2021-01-21T00:00:00\",\r\n            \"Hora\": \"19:10\",\r\n            \"Estatus\": \"CONFIRMAR\",\r\n            \"Cliente\": \"61335\",\r\n            \"Nombre\": \"RAQUEL LOERA OCHOA\",\r\n            \"Articulo\": \"1791-COROLLA B CVT\",\r\n            \"Vehiculo\": \"COROLLA BASE CVT\",\r\n            \"Vin\": \"5YFBPRBE9LP006455\",\r\n            \"Agente\": \"MARCO GREGORIO MEDINA GONZALEZ\",\r\n            \"Comentarios\": \"\\nMantenimiento por 0 kilometros. \",\r\n            \"Sucursal\": \"Valladolid\",\r\n            \"DireccionSucursal\": \"AV. ACUEDUCTO 3603, PASCUAL ORTIZ DE AYALA, MORELIA, 58250 MORELIA, MICHOACAN\",\r\n            \"latitud\": \"19.694617\",\r\n            \"longitud\": \"101.153793,17\"\r\n        }\r\n    ],\r\n    \"status\": \"0\",\r\n    \"message\": \"OK\"\r\n}\r\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Acciones sobre las citas"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

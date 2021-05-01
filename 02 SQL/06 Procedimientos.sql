@@ -469,6 +469,7 @@ DECLARE
 END
 GO
 
+
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -546,10 +547,10 @@ DECLARE
 		/*CLIENTE EXCLUSIVO DE SEEKOP EN LA AGENCIA*/
 		
 		INSERT INTO Venta
-		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente/*,FechaRequerida,HoraRequerida*/,HoraRecepcion
+		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
 		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
 		--SELECT Empresa,Mov,CONVERT(VARCHAR(10),GETDATE(),126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,@HoraRecepcion,
-		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,HoraRequerida,
+		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
 		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),'Creada desde Interfaz Seekop '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,@SDesArt,@AgenteServicio
 		FROM CA_log_sepa_citas
 		WHERE ID=@ID			
@@ -571,10 +572,10 @@ DECLARE
 	ELSE
 	BEGIN
 		INSERT INTO Venta
-		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente/*,FechaRequerida,HoraRequerida*/,HoraRecepcion
+		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
 		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
 		--SELECT Empresa,Mov,CONVERT(VARCHAR(10),GETDATE(),126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,@HoraRecepcion,
-		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,HoraRequerida,
+		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
 		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),'Creada desde APP SePa '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,@AgenteServicio
 		FROM CA_log_sepa_citas
 		WHERE ID=@ID			

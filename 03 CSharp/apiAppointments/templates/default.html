@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Api</title>
+  </head>
+  <body>
+    <h1>Template default</h1>
+    {% for version in versiones %}
+    <h2>
+      {{version.id}}.-{{version.nombre}} ( {%if version.eliminado%} Inactivo
+      {%else%} Activo {%endif%} )
+    </h2>
+    {% endfor %}
+  </body>
+</html>

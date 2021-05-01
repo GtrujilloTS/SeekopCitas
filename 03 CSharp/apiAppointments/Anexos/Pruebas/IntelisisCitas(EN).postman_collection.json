@@ -1,0 +1,473 @@
+{
+	"info": {
+		"_postman_id": "c77ee001-463b-4f60-aeaa-1c61f867be83",
+		"name": "IntelisisCitas (EN)",
+		"description": "# API for managing service appointments attached to Intelisis.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authenticator",
+			"item": [
+				{
+					"name": "Auth",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"TOKEN\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"accept-encoding": true,
+							"connection": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Int-Key",
+								"value": "{{PRIVATEKEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{USER}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{PASSWORD}}",
+									"type": "text"
+								},
+								{
+									"key": "IdDistribuidor",
+									"value": "{{DEALERID}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{HOST}}/api/Auth/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"Auth",
+								""
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "## Action to authenticate.\n\n## Endpoint for vehicles `api/Auth/`\n\n*In this endpoint the authentication of the user and generation of its token can be performed.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| username      | Account name |\n| password      | Assigned by the user |\n| idDistribuidor| Identifier of the distributor to which the user belongs. |\n\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| token         | User’s token |\n| status        | Transaction status |\n| idDistribuidor| Identifier of the distributor to which the user belongs |\n\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | User does not exist  |\n| 2                  | Invalid password |\n\n\n## Example of succesful transaction\n```\n{\n    \"token\": \"X\",\n    \"IdDistribuidor\": 76,\n    \"status\": \"0\"\n}\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Authenticator"
+		},
+		{
+			"name": "Catalogs",
+			"item": [
+				{
+					"name": "Vehicles",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "eyJpZHN1Y3Vyc2FsIjoiNzYifQ=="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/vehiculos/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"vehiculos",
+								""
+							]
+						},
+						"description": "# Vehicle catalog\n\n## Endpoint for vehicles `api/vehiculos/`\n\n*In this endpoint the vehicles that exist within analysis by model will be presented.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Branch identifyer |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status        | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter       | Description       |\n| --------------- |:-----------------:|\n| Clave           | Vehicle’s model code |\n| Descripcion     | Description of the vehicle’s model |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Branch does not exist           |\n| 2                  | Non-optimal branch configurations to obtain vehicle by model |\n\n## Example of succesful answer\n```\n{\n    \"data\": [\n        {\n            \"Clave\": \"350Z\",\n            \"Descripcion\": \"350Z\"\n        },\n        {\n            \"Clave\": \"A32\",\n            \"Descripcion\": \"MAXIMA\"\n        },\n        ...\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "ServiceCategories",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "eydpZHN1Y3Vyc2FsJzogJzc2J30="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/categorias/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"categorias",
+								""
+							]
+						},
+						"description": "# Service Categories Catalog\n\n## Endpoint for service categories `api/categorias/`\n\n*In this endpoint the categories that exist within Intelisis will be presented.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Dealer code |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter       | Description       |\n| --------------- |:-----------------:|\n| Categoria            | Category name |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Client does not exist           |\n| 2                  | Branch configurations not optimal for obtaining the categories. |\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"Categoria\": \"Mantenimiento\"\n        },\n        {\n            \"Categoria\": \"Reparacion\"\n        }\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "ServiceTypes",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "eydpZHN1Y3Vyc2FsJzogJzc2J30="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/tipos/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"tipos",
+								""
+							]
+						},
+						"description": "# Service Types Catalog\n\n## Endpoint for types `api/tipos/`\n\n*In this endpoint, the types of service will be presented, which will be loaded informatively at the appointment and are managed within Intelisis.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Dealer code |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter       | Description       |\n| --------------- |:-----------------:|\n| Clave           | Service type key |\n| Descripcion     | Service type description |\n| Grupo           | Category to which it belongs. |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Branch does not exist           |\n| 2                  | Branch configurations not optimal for obtaining the types of service |\n\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"Clave\": \"NSERV10KM\",\n            \"Descripcion\": \"SERVICIO DE 10 MIL KM\",\n            \"Grupo\": \"Mantenimiento\"\n        },\n        {\n            \"Clave\": \"NSERV100KM\",\n            \"Descripcion\": \"SERVICIO DE 100 MIL KM\",\n            \"Grupo\": \"Mantenimiento\"\n        },\n        {\n            \"Clave\": \"NSERV105KM\",\n            \"Descripcion\": \"SERVICIO DE 105 MIL KM\",\n            \"Grupo\": \"Mantenimiento\"\n        },\n        ...\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Client",
+			"item": [
+				{
+					"name": "CreateClient",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ25vbWJyZSc6ICdQZWRybycsCiAgICAnYXBhdGVybm8nOiAnUm9kcmlndWV6JywKICAgICdhbWF0ZXJubyc6ICdMb3BlJywKICAgICdjcCc6ICcnLAogICAgJ2VtYWlsJzogJycsCiAgICAndGVsZWZvbm8nOiAnJwogIH0="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/crearcliente/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"crearcliente",
+								""
+							]
+						},
+						"description": "# Action for the creation of clients\n\n## Endpoint for add a new client `api/creacliente/`\n\n*In this endpoint new clients to the Intelisis system will be registered.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Dealer ID |\n| nombre        | Client’s maiden name(s) |\n| apaterno      | Client’s paternal last name |\n| amaterno      | Client’s maternal last name |\n| cp            | Client’s zip code |\n| email         | Client’s e-mail |\n| telefono      | Client’s phone number  |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| Cliente         | Client’s code in Intelisis |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Client does not exist           |\n| 2                  | Client settings not optimal for obtaining the types of service in your branch |\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"Cliente\": \"SKS1\"\n        }\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "GetClient",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token {{TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ25vbWJyZSc6ICdQZWRybycsCiAgICAnYXBhdGVybm8nOiAnUm9kcmlndWV6JywKICAgICdhbWF0ZXJubyc6ICdMb3BleicKICB9"
+						},
+						"url": {
+							"raw": "{{HOST}}/api/cliente/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"cliente",
+								""
+							]
+						},
+						"description": "# Action for get data from client\n\n## Endpoint for data client `api/cliente/`\n\n*In this endpoint the key client’s key is obtained in the Intelisis system.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Dealer ID |\n| nombre        | Client’s maiden name(s) |\n| apaterno      | Client’s paternal last name |\n| amaterno      | Client’s maternal last name |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status        | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| Cliente         | Intelisis client code |\n| Nombre         | Full name of client in Intelisis. |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Client does not exist           |\n| 2                  | Customer settings not optimal for obtaining the types of service in your branch |\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"Cliente\": \"SKS2\",\n            \"Nombre\": \"PEDRO RODRIGUEZ LOPEZ\"\n        }\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "GetCalendar",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token {{TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ21lcyc6ICcxJywKICAgICdhbmlvJzogJzIwMjEnCiAgfQ=="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/calendario/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"calendario",
+								""
+							]
+						},
+						"description": "# Action to obtain the available days of service.\n\n## Endpoint for calendar `api/calendario/`\n\n*In this endpoint, the available hours to create appointments will be presented.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Dealer ID |\n|mes            | Month to consult   |\n|anio           | Year to consult   |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter       | Description       |\n| --------------- |:-----------------:|\n| Agente   | Agent’s name |\n| Fecha  | Available date |\n\n## Error Response\n\n| Codigo de respuesta| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Client does not exist           |\n| 2                  |Customer settings not optimal for obtaining the types of service in the branch |\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"Fecha\": \"2020-01-01T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-02T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-03T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-06T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-07T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-08T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-09T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-10T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-13T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-14T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-15T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-16T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-17T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-20T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-21T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-22T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-23T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-24T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-27T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-28T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-29T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-30T00:00:00\"\n        },\n        {\n            \"Fecha\": \"2020-01-31T00:00:00\"\n        }\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "GetSchedules",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token {{TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgJ2lkc3VjdXJzYWwnOiAnNzYnLAogICAgJ2RpYSc6ICcyOScsCiAgICAnbWVzJzogJzEnLAogICAgJ2FuaW8nOiAnMjAyMCcKICB9"
+						},
+						"url": {
+							"raw": "{{HOST}}/api/horario/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"horario",
+								""
+							]
+						},
+						"description": "# Action to obtain the available schedules.\n\n## Endpoint for get schedules `api/horario/`\n\n*In this endpoint the available hours to create appointments will be presented that within Intelisis.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Identificador de la agencia |\n|mes            | Month to consult   |\n|dia            | Day to consult   |\n|anio           | Year to consult   |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Consult Query |\n| data          | In this endpoint the available hours to create appointments will be presented that within Intelisis. |\n\n## Data collections structure\n\n| Parameter       | Description       |\n| --------------- |:-----------------:|\n| Agente   | Agent’s name |\n| Fecha  | Available appointment date |\n| Hora  | Available appointment time |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Client does not exist           |\n| 2                  | Customer settings not optimal for obtaining the types of service in the branch |\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"Agente\": \"VA1\",\n            \"Fecha\": \"2020-01-24T07:00:00\",\n            \"Hora\": \"07:00\"\n        },\n        {\n            \"Agente\": \"VA1\",\n            \"Fecha\": \"2020-01-24T07:20:00\",\n            \"Hora\": \"07:20\"\n        },\n        {\n            \"Agente\": \"VA1\",\n            \"Fecha\": \"2020-01-24T07:40:00\",\n            \"Hora\": \"07:40\"\n        },\n        {\n            \"Agente\": \"VA1\",\n            \"Fecha\": \"2020-01-24T08:00:00\",\n            \"Hora\": \"08:00\"\n        },\n        ...\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "CreateAppointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Token {{TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICJjbGllbnRlIjogIlNLUzYiLAogICJpZHN1Y3Vyc2FsIjogIjc2IiwKICAiZGlhIjogIjE2LzAyLzIwMjEiLAogICJhZ2VudGUiOiAiMTYzIiwKICAiaG9yYSI6ICIxMDo0MCIsCiAgInRpcG8iOiAiTWFudGVuaW1pZW50byIsCiAgIm9ic2VydmFjaW9uZXMiOiAiUHJ1ZWJhIHNlZWtvcCIsCiAgIkttIjogIjQwMDAwIiwKICAidmVoaWN1bG8iOiAiRS0yNCIsCiAgInNlcnZpY2lvc2VyaWUiOiAiMUdZRlo5UjQ5S0YxMTIyMTgiLAogICJzZXJ2aWNpb3BsYWNhcyI6ICIiLAogICJzZXJ2aWNpb21vZGVsbyI6ICIyMDIxIiwKICAiYXJ0aWN1bG9wYXF1ZXRlIjogIk5TRVJWMTBLTSIKfQ=="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/creaCitas/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"creaCitas",
+								""
+							]
+						},
+						"description": "# Action for the creation of appointments\n\n## Endpoint for create a new appointment `api/creaCitas/`\n\n*In this endpoint, appointments sent from the client to save them and affect them within the analysis linked to a client, will be recorded.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| cliente       | Client ID |\n| idsucursal    | Dealer ID |\n| dia           | Requested appointment date |\n| agente        | Service agent’s ID |\n| hora          | Requested appointment time\n  |\n| tipo          | Type of selected service    |\n| observaciones | Text field loaded for observations |\n| Km            | Mileage |\n| vehiculo      | Car catalog identifier  |\n| servicioserie | Vehicle’s VIN |\n| servicioplacas| Vehicle’s plate number\n |\n| serviciomodelo| Vehicle’s make |\n| articulopaquete|Service Car catalog identifier |\n\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Consult Query |\n| data          | In this endpoint the available hours to create appointments will be presented that within Intelisis. |\n\n## Data collections structure\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| Folio         | Confirmed appointment folio |\n| OkRef         | Message variable on successful execution |\n| IdlogIntelisis| Appointment record identifier in temporary table before affecting appointment |\n\n## Error Response\n\n| Response code| Description               |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Client does not exist           |\n| 2                  | Customer settings not optimal for obtaining the types of service in branch |\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"Folio\": \"TU4308\",\n            \"OkRef\": \"\",\n            \"IdlogIntelisis\": 2537\n        }\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "CancelAppointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token {{TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICJmb2xpbyI6ICIyODc3NCIsCiAgImlkc3VjdXJzYWwiOiAiNzYiCn0="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/cancelarCita/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"cancelarCita",
+								""
+							]
+						},
+						"description": "# Action for cancellation of appointments\n\n## Endpoint for cancel appintments `api/cancelarCita/`\n\n*In this endpoint, the appointments that exist within Intelisis will be canceled.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| folio         | Appointment’s folio |\n| idsucursal    | Dealer ID |\n\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter       | Description       |\n| --------------- |:-----------------:|\n| Estatus   | CANCELLED status |\n| Respuesta  | Confirmation message |\n| Tipo  | Movement type |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Appointment does not exist           |\n| 2                  | Customer settings not optimal for obtaining the types of service in your branch |\n| 3                  | Branch does not exist           |\n\n## Succesful answer example\n```\n{\n    \"data\": {\n\t\"Estatus\": \"CANCELADO\",\n        \"Respuesta\": \"Cancelacion Exitosa\",\n        \"Tipo\": \"200\"\n        \n    },\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "AppointmentsPerDates",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Token {{TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "ewogICAgImlkc3VjdXJzYWwiOiI3NiIsCiAgICAiRmVjaGFEIjoiMjAyMS0wMi0xMSIsCiAgICAiRmVjaGFBIjoiMjAyMS0wMi0xNiIKfQ=="
+						},
+						"url": {
+							"raw": "{{HOST}}/api/CitasFechas/",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"CitasFechas",
+								""
+							]
+						},
+						"description": "# Action to obtain appointments.\n\n## Endpoint for get appointments `api/CitasFechas/`\n\n*In this endpoint, appointments that exist within the analysis filtered by date will be presented.*\n\n## Request Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| idsucursal    | Client ID |\n| fechaD        | Initial consultation date |\n| fechaA        | Final consultation date |\n\n## Response Params\n\n| Parameter     | Description   |\n| ------------- |:-------------:|\n| message       | Personalized message |\n| status       | Query status |\n| data          | Data collections with the query result |\n\n## Data collections structure\n\n| Parameter       | Description       |\n| --------------- |:-----------------:|\n| IDCita   | Appointment ID\n |\n| Empresa  | Intelisis Company code |\n| Movimiento  | Movement type |\n| Folio  | Folio generated by confirmed appointment |\n| Fecha  | Appointment required date |\n| Hora  | Appointment required time |\n| Estatus  | Movement status\n |\n| Cliente  | Client DMS code |\n| Nombre  | Client’s name |\n| Articulo  | Vehicle identification code |\n| Vehiculo  | Vehicle line |\n| Vin  | VIN |\n| Agente  | Agent |\n| Comentarios  | Comments added to the appointment |\n| Sucursal  | DMS branch where registration was made |\n| DireccionSucursal  | Branch adresss |\n| latitud  | Branch location latitude |\n| longitud  | Branch location longitude |\n\n## Error Response\n\n| Response code| Description                 |\n| -------------------|:---------------------------:|\n| 0                  | Succesful transaction         |\n| 1                  | Dealer does not exist           |\n| 2                  | Non-optimal agency settings for obtaining the types of service |\n\n## Succesful response example\n```\n{\n    \"data\": [\n        {\n            \"IDCita\": 1845620,\n            \"Empresa\": \"TOYFA\",\n            \"Movimiento\": \"Cita Servicio\",\n            \"Folio\": \"TV84390\",\n            \"Fecha\": \"2021-01-21T00:00:00\",\n            \"Hora\": \"19:10\",\n            \"Estatus\": \"CONFIRMAR\",\n            \"Cliente\": \"61335\",\n            \"Nombre\": \"RAQUEL LOERA OCHOA\",\n            \"Articulo\": \"1791-COROLLA B CVT\",\n            \"Vehiculo\": \"COROLLA BASE CVT\",\n            \"Vin\": \"5YFBPRBE9LP006455\",\n            \"Agente\": \"MARCO GREGORIO MEDINA GONZALEZ\",\n            \"Comentarios\": \"\\nMantenimiento por 0 kilometros. \",\n            \"Sucursal\": \"Valladolid\",\n            \"DireccionSucursal\": \"AV. ACUEDUCTO 3603, PASCUAL ORTIZ DE AYALA, MORELIA, 58250 MORELIA, MICHOACAN\",\n            \"latitud\": \"19.694617\",\n            \"longitud\": \"101.153793,17\"\n        }\n    ],\n    \"status\": \"0\",\n    \"message\": \"OK\"\n}\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Actions on appointments"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
