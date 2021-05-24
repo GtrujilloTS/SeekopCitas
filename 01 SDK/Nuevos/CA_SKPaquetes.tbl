@@ -40,6 +40,7 @@ AyudaForma=ArtLista
 AyudaVista=Art
 AyudaCampo=Art.Articulo
 AyudaEnCaptura=Vista
+AyudaMultiple=S
 [Descripcion]
 Clave=Descripcion
 Nombre=Descripcion
@@ -62,8 +63,17 @@ Tamano=20
 
 AyudaEnCaptura=Lista de Opciones
 OpcionesUnicamente=S
-ListaOpciones=(Lista)
 OpcionesPredefinidas=Ninguna
+
+
+
+ValorPorOmision=<T>Mantenimiento<T>
+
+
+
+
+
+ListaOpciones=(Lista)
 
 
 
@@ -72,9 +82,6 @@ OpcionesPredefinidas=Ninguna
 Mantenimiento=Reparacion
 Reparacion=Otro
 Otro=(Fin)
-
-
-
 
 
 

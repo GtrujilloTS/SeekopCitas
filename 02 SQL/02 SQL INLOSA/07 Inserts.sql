@@ -3,6 +3,7 @@ Giovanni Trujillo Silvas
 Registro para nuevo consecutivo
 
 ===============================*/
+ALTER TABLE [dbo].[Venta] ADD [HoraRecepcion] [char](5) NULL
 INSERT INTO Consecutivo VALUES('CitasSK','Global',0,'SKS',0,'Normal',0,0)
 
 /*==============================
@@ -95,3 +96,50 @@ INSERT INTO CA_SKModeloVehiculos VALUES('Y33-1','INFINITI')
 INSERT INTO CA_SKModeloVehiculos VALUES('Z32-1','300 ZX')
 INSERT INTO CA_SKModeloVehiculos VALUES('Z50','MURANO')
 INSERT INTO CA_SKModeloVehiculos VALUES('OTROS','OTROS')
+
+
+/*==============================
+Giovanni Trujillo Silvas
+Parametros a usar para Seekop
+===============================*/
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SeekopCitas', N'Empresa', N'Nissan',  N'Interfaz', N'Interfaz Ciitas Seekop', N'Si la agencia tiene ativo este parametro significa que estara reviviendo y compartiendo informacion a Seekop de las citas Generadas')
+GO
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKUsuario', N'Sucursal', N'Nissan', N'SeekopCitas', N'Usuario de Intelisis que detona Citas', N'Este parametro contendra al usuario que ara el proceso de afectacion en Intelisis')
+GO
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKAgenteServicio', N'Sucursal', N'Nissan', N'SeekopCitas', N'Agente de Servicio configurado para citas', N'Agente de Servicio que se usa para Citas, este agente se guarda en el Campo AgenteServicio y se ve en la pestaña Informacion Adicional')
+GO
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKEndPointConcludeAppointments', N'Sucursal', N'Nissan', N'SeekopCitas', N'Endpoint de la Api usada para concluir citas', N'Endpoint de la Api usada para concluir citas')
+GO
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKClienteSeekop', N'Sucursal', N'Nissan', N'SeekopCitas', N'Cliente Generico para citas de Seekop', N'Todas las citas Seekop usaran el cliente que se configure para cada Sucursal')
+GO
+---el siguiente parametro aplica solo para Inlosa
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKAlmacenCitas', N'Sucursal', N'Nissan', N'SeekopCitas', N'Almacen a usar para creacion de Citas Seekop', N'Almacion especifico en el cual se estaran generando las citas de Servicio Provemientes de Seekop')
+GO
+
+
+
+--SET IDENTITY_INSERT [dbo].[CA_Interfaces] ON 
+
+--INSERT [dbo].[CA_Interfaces] ([ID], [RenglonID], [Empresa], [Interfaz], [Marca], [Sucursal], [Estatus]) VALUES (1, 2, N'NISAC', N'SeekopCitas', N'Nissan', 1, 1)
+--SET IDENTITY_INSERT [dbo].[CA_Interfaces] OFF
+--INSERT [dbo].[CA_InterfacesD] ([ID], [Renglon], [RenglonID], [Clave], [Valor]) VALUES (1, 2048, 1, N'Usuario', N'USUARIOINTELISIS')
+--INSERT [dbo].[CA_InterfacesD] ([ID], [Renglon], [RenglonID], [Clave], [Valor]) VALUES (1, 4096, 2, N'AgenteServicio', N'AGENTESERVIVIO')
+--INSERT [dbo].[CA_InterfacesD] ([ID], [Renglon], [RenglonID], [Clave], [Valor]) VALUES (1, 6144, 3, N'EndPointConcludeAppointments', N'https://apinissan-dev.intelisis-solutions.com:8443/api/concludeAppointments/')
+--INSERT [dbo].[CA_InterfacesD] ([ID], [Renglon], [RenglonID], [Clave], [Valor]) VALUES (1, 8192, 4, N'ClienteSeekop', N'SKS0001')
+--ALTER TABLE [dbo].[CA_Interfaces] ADD  DEFAULT ((1)) FOR [Estatus]
+--GO
+
+
+
+
+
+
+
+
+/*EndPoint de Pruebas*/
+https://apinissan-dev.intelisis-solutions.com:8443/api/concludeAppointments/
+
+
+
+/*EndPoint Produccion*/
+https://apinissan.intelisis-solutions.com:8443/api/concludeAppointments/

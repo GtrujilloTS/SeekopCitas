@@ -278,25 +278,6 @@ DECLARE
 	BEGIN
 		SELECT * FROM @HorarioAgentes WHERE Hora>@HoraComienzo ORDER BY Hora
 	END
-	ELSE
-	BEGIN
-		IF (SELECT TOP 1 CONVERT(VARCHAR(10),Fecha,103) FROM @HorarioAgentes)=CONVERT(VARCHAR(10),GETDATE(),103)
-		BEGIN 
-			INSERT INTO CA_apitoyhorarios
-			SELECT  H.*, A.PersonalNombres, A.PersonalApellidoPaterno, A.tipo, @Anio, @Mes, @Dia 
-			FROM @HorarioAgentes AS H 
-			INNER JOIN Agente AS A ON H.agente = A.agente  WHERE H.Hora>SUBSTRING(CONVERT(VARCHAR(23),DATEADD(HOUR, @HoraMargen ,GETDATE()),126),12,5)
-			ORDER BY H.Agente asc, H.Hora asc 
-		END
-		ELSE
-		BEGIN
-			INSERT INTO CA_apitoyhorarios
-			SELECT  H.*, A.PersonalNombres, A.PersonalApellidoPaterno, A.tipo, @Anio, @Mes, @Dia 
-			FROM @HorarioAgentes AS H 
-			INNER JOIN Agente AS A ON H.agente = A.agente 
-			ORDER BY H.Agente asc, H.Hora asc
-		END
-	END
 --/*GTS|Fin|Funcion para obtener un horario de dia dependiendo de la la hora de la jornada y los minutos de recepcion*/
 END
 GO
@@ -468,8 +449,6 @@ DECLARE
 
 END
 GO
-
-
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -509,7 +488,8 @@ DECLARE
 @Concepto		VARCHAR(20),
 @IDLog			INT
 
-
+BEGIN TRY
+	UPDATE CA_log_sepa_citas SET SUCURSAL=0, SUCURSALORIGEN=0 
 	IF EXISTS (SELECT * FROM CA_log_sepa_citas WHERE ID=@ID AND Estatus='SINAFECTAR')
 		SELECT @Fecha =FechaEmision, @Hora=HoraRequerida, @Sucursal=Sucursal,@Agente=Agente, @Cliente=Cliente FROM CA_log_sepa_citas WHERE ID=@ID 
 	ELSE
@@ -525,7 +505,7 @@ DECLARE
 	ELSE
 	SELECT  @HoraRecepcion= SUBSTRING(CONVERT(VARCHAR(23),GETDATE(),126),12,5)	
 	
-	SELECT @Usuario=UsuarioSePaCS,@AgenteServicio=AgenteServicio FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
+	--SELECT @Usuario=UsuarioSePaCS,@AgenteServicio=AgenteServicio FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
 
 
 	IF @Cliente LIKE 'SKS%'---- CLIENTE QUE ES EXCLUSIVO PARA SEEKOP
@@ -533,25 +513,23 @@ DECLARE
 		
 			--SET @ClienteSK='ITCTESK'
 		/*Se buscan los parametros configurados en la ventana de Interfaces por sucursal y extrae el valor configurado*/
-
+		
 		SELECT @Usuario=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','Usuario')
 		SELECT @AgenteServicio=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','AgenteServicio')
 		SELECT @ClienteSK=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','ClienteSeekop')
 
-		SELECT TOP 1 @SArt=ServicioArticulo,@SModelo=ServicioModelo,@SPlacas=ServicioPlacas,@SVin=ServicioSerie,@ArticuloPaquete=ISNULL(ArticuloPaquete,''),@Concepto=Concepto FROM CA_log_sepa_citas WHERE Cliente =@Cliente ORDER BY ID DESC
-		
-		
+		SELECT TOP 1 @SArt=ServicioArticulo,@SModelo=ServicioModelo,@SPlacas=ServicioPlacas,@SVin=ServicioSerie,@ArticuloPaquete=ISNULL(ArticuloPaquete,''),@Concepto=Concepto FROM CA_log_sepa_citas WHERE Cliente =@Cliente ORDER BY ID DESC	
 		SELECT TOP 1 @SDesArt=Descripcion FROM CA_SKModeloVehiculos WHERE Clave=@SArt
 
 
 		/*CLIENTE EXCLUSIVO DE SEEKOP EN LA AGENCIA*/
 		
 		INSERT INTO Venta
-		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
-		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
+		(Empresa,Mov,FechaEmision,Concepto,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
+		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioNumeroEconomico,ServicioDescripcion,ZonaImpuesto)
 		--SELECT Empresa,Mov,CONVERT(VARCHAR(10),GETDATE(),126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,@HoraRecepcion,
-		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
-		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),'Creada desde Interfaz Seekop '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,@SDesArt,@AgenteServicio
+		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,0),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
+		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,0,'Creada desde Interfaz Seekop '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioNumeroEconomico,@SDesArt,'16'
 		FROM CA_log_sepa_citas
 		WHERE ID=@ID			
 		
@@ -572,11 +550,11 @@ DECLARE
 	ELSE
 	BEGIN
 		INSERT INTO Venta
-		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
-		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
+		(Empresa,Mov,FechaEmision,Concepto,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente/*,FechaRequerida,HoraRequerida*/,HoraRecepcion
+		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
 		--SELECT Empresa,Mov,CONVERT(VARCHAR(10),GETDATE(),126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,@HoraRecepcion,
-		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
-		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),'Creada desde APP SePa '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,@AgenteServicio
+		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,HoraRequerida,
+		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),'Creada desde APP SePa '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioNumeroEconomico,ServicioDescripcion,@AgenteServicio
 		FROM CA_log_sepa_citas
 		WHERE ID=@ID			
 		
@@ -600,7 +578,7 @@ DECLARE
 			/*INICIO:Insertamos Informacion en el Monitor General de Interfaces*/
 			/*Cabecero*/
 			INSERT INTO CA_LogMovimientosInterfaz
-			SELECT V.Sucursal,'SeekopCitas',V.ID,'VTAS',V.MOV,V.MOVID,GETDATE(),GETDATE(),NULL,NULL,V.Estatus,NULL, 'SeekopCitas',(SELECT TOP 1 VERSION FROM Sucursal)
+			SELECT V.Sucursal,'SeekopCitas',V.ID,'VTAS',V.MOV,V.MOVID,GETDATE(),GETDATE(),NULL,NULL,V.Estatus,NULL, 'SeekopCitas','Nissan'
 			FROM Venta AS V WHERE V.ID=@GenerarID
 			SELECT @IDLog=IDENT_CURRENT('CA_LogMovimientosInterfaz')
 			/*Detalle*/
@@ -611,16 +589,21 @@ DECLARE
 
 			IF @ArticuloPaquete!=''
 			BEGIN
-				INSERT INTO VENTAD (ID,Renglon,RenglonSub,RenglonID,RenglonTipo,Almacen,UEN,Sucursal,SucursalOrigen,Cantidad,Articulo,Impuesto1,DescripcionExtra,UT,CCTiempoTab)
-				SELECT @GenerarID,2048,0,1,'N',dbo.fnCA_GeneraAlmacenlValido('VTAS','Cita Servicio',dbo.fnCA_GeneraSucursalValida('VTAS','Cita Servicio',@Sucursal)),
-				dbo.fnCA_GeneraUENValida('VTAS','Cita Servicio',dbo.fnCA_GeneraSucursalValida('VTAS','Cita Servicio',@Sucursal),@Concepto),
+				INSERT INTO VENTAD (ID,Renglon,RenglonSub,RenglonID,RenglonTipo,Almacen,Sucursal,SucursalOrigen,Cantidad,Articulo,Impuesto1,DescripcionExtra)
+				SELECT @GenerarID,2048,0,1,'N',dbo.fnCA_GeneraAlmacenlValido('VTAS','Cita Servicio',0),
 				dbo.fnCA_GeneraSucursalValida('VTAS','Cita Servicio',@Sucursal),dbo.fnCA_GeneraSucursalValida('VTAS','Cita Servicio',@Sucursal),
-				ISNULL(Horas,1),Articulo,Impuesto1,Descripcion1,ISNULL(Horas,1),ISNULL(Horas,1) 
+				ISNULL(Horas,1),Articulo,Impuesto1,Descripcion1
 				FROM ART WHERE ARTICULO=@ArticuloPaquete
 			END
 		END
 	END
-		
+END TRY
+BEGIN CATCH
+
+	SELECT @OK=1065, @OkRef = ERROR_MESSAGE()+' '+ CONVERT(VARCHAR(100),ERROR_LINE()) 
+END CATCH 
+
+
 	IF @OkRef='OK'
 		SET @OkRef= NULL
 
@@ -634,6 +617,7 @@ DECLARE
 		ROLLBACK TRANSACTION
 		
 END
+
 GO
 
 SET ANSI_NULLS OFF
@@ -811,4 +795,18 @@ DECLARE
 	END
 
 END
+GO
+
+
+
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE PROCEDURE [dbo].[LimpiaListaSt]     
+  @Estacion               int         
+AS      
+BEGIN      
+  Delete from ListaSt where Estacion = @Estacion    
+END    
 GO

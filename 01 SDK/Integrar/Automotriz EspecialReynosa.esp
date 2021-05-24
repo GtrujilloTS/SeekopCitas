@@ -1,0 +1,378 @@
+
+;;RLS Reporte 456 Intelisis
+[ExplorarCFD.frm/Forma]
+ListaAcciones.Cambios=Insertar<TAB>UUID<TAB>6
+
+
+[ExplorarCFD.frm/Acciones.UUID]
+Nombre=UUID
+Boton=38
+NombreEnBoton=S
+NombreDesplegar=Reporte Mensual &UUID
+EnBarraHerramientas=S
+TipoAccion=Expresion
+Expresion=Asigna(Info.Ejercicio, EjercicioTrabajo)<BR>Asigna(Info.Periodo, PeriodoTrabajo)<BR><BR>Si (SQL(<T>SELECT ISNULL(FacturaMultiVIN, 0) FROM EmpresaCfg WHERE Empresa = :tEmp<T>, Empresa) = 0)<BR>Entonces<BR>Si Forma(<T>EspecificarEjercicioPeriodo<T>)<BR>Entonces<BR>GuardarLista(SQLEnLista(<T>spCFDReporteMensualUUID :tEmp, :nEjercicio, :nPeriodo<T>, Empresa, Info.Ejercicio, Info.Periodo), <T><T>, <T>1<T>+Empresa.RFC+LlenaDeCeros(Info.Periodo,2)+Info.Ejercicio+<T>.txt<T>, <T>TXT<T>, <T>Datos<T>, <T>Datos<T>)<BR>Fin<BR>Sino<BR>Si Forma(<T>EspecificarEjercicioPeriodo<T>)<BR>Entonces<BR>EjecutarSQL(<T>EXEC spCFDMensualMulti :tEmp, :tAnio, :tMes, :tEstacion<T>,  Empresa, Info.Ejercicio, Info.Periodo,  EstacionTrabajo)<BR>Fin<BR>Fin
+Activo=S
+Visible=S
+
+; - RNFD - DDC Carga VIN -----------------------------------------------------------------------------------------------------
+
+[Venta.frm/Acciones.Afectar]
+Expresion=Asigna(Info.Modulo, <T>VTAS<T>)<BR>Asigna(Info.ID, Venta:Venta.ID)<BR>Asigna(Info.Mov, Venta:Venta.Mov)<BR>Asigna(Info.MovID, Venta:Venta.MovID)<BR>Asigna(Info.Cliente, Venta:Venta.Cliente)<BR>Asigna(Info.OrigenTipo, Venta:Venta.OrigenTipo)<BR>Si<BR> <BR> Info.Mov = <T>Servicio<T><BR>Entonces<BR> <BR>  Asigna(Info.Mensaje, SQL(<T>EXEC xpDDCCargaVINValidarVIN :nID<T>, Info.ID))<BR> <BR><BR>  Si<BR> <BR>    Info.Mensaje <> <T>OK<T><BR> <BR>  Entonces<BR> <BR>    Si<BR> <BR>      Confirmacion(<T>¿El VIN del Servicio no está registrado en el Master de Nissan, desea continuar?<T>, BotonSi, BotonNo) = BotonNo<BR> <BR>    Entonces<BR> <BR>      AbortarOperacion<BR> <BR>    Fin<BR> <BR>  Fin<BR>Fin<BR><BR>Si<BR>  Config.VentaActualizarPrecioMoneda y (Venta:Venta.Estatus en (EstatusSinAfectar, EstatusPorConfirmar)) y SQL(<T>spVentaActualizarPreciosChecar :nID<T>, Venta:Venta.ID)<BR>Entonces<BR>  Caso Confirmacion(<T>¿ Desea Actualizar los Precios Otras Monedas ?<T>, BotonSi, BotonNo, BotonCancelar)<BR>    Es BotonSi Entonces EjecutarSQL(<T>spVentaActualizarPrecios :nID<T>, Venta:Venta.ID) AbortarOperacion<BR>    Es BotonCancelar Entonces AbortarOperacion<BR>  Fin<BR>Fin<BR><BR>Si(General.OFER y (Info.OrigenTipo <> <T>VMOS<T>), EjecutarSQL(<T>spOfertaAplicar :nID<T>, Venta:Venta.ID))<BR>Si<BR>  (Venta:Venta.Mov=Info.MovProcesar) y (Venta:Venta.Estatus=EstatusSinAfectar)<BR>Entonces<BR>  EjecutarSQL(<T>xpVentaAutoProcesar :nID<T>, Venta:Venta.ID)<BR>Sino<BR>  Asigna(Afectar.Modulo, <T>VTAS<T>)<BR>  Asigna(Afectar.ID, Venta:Venta.ID)<BR>  Asigna(Afectar.Mov, Venta:Venta.Mov)<BR>  Asigna(Afectar.MovID, Venta:Venta.MovID)<BR>  Asigna(Afectar.FormaCaptura, <T>Venta<T>)<BR>  Asigna(Afectar.EnviarCFD, Falso)<BR>  Asigna(Info.TituloDialogo, Afectar.Mov+<T> <T>+Afectar.MovID)<BR>  Asigna(Info.MovTipo, MovTipo(<T>VTAS<T>, Venta:Venta.Mov))<BR>  Asigna(Info.Cliente, Venta:Venta.Cliente)<BR>  Asigna(Info.Moneda, Venta:Venta.Moneda)<BR>  Asigna(Info.TipoCambio, Venta:Venta.TipoCambio)<BR>  Asigna(Info.Importe, Redondea(Suma(VentaD:Importe)+Suma(VentaD:Impuesto)-Suma(VentaD:DescGlobal)+Suma(VentaD:ImporteSobrePrecio)-(Venta:Venta.AnticiposFacturados+Venta:Venta.Retencion), Config.VentaCobroRedondeoDecimales))<BR>  Si<BR>    (Info.Importe<>0) y<BR>    (Venta:Venta.Estatus en (EstatusSinAfectar, EstatusBorrador, EstatusPorConfirmar)) y<BR>    ((MovTipoEn(<T>VTAS<T>, Venta:Venta.Mov, (VTAS.N, VTAS.FM)) y (ConDatos(Venta:Venta.MovID) o Config.VentaLiquidaIntegral) y (Venta:Condicion.ControlAnticipos<><T>Cobrar Pedido<T>)) o<BR>    (MovTipoEn(<T>VTAS<T>, Venta:Venta.Mov, (VTAS.S, VTAS.P, VTAS.VP, VTAS.SD, VTAS.B))  y (Venta:Condicion.ControlAnticipos=<T>Cobrar Pedido<T>)) o<BR>    (MovTipoEn(<T>VTAS<T>, Venta:Venta.Mov, (VTAS.F, VTAS.FAR, VTAS.FB, VTAS.D, VTAS.DF)) y (Venta:Venta.Vencimiento<=Venta:Venta.FechaEmision) y Config.FacturaCobroIntegrado y (Venta:Condicion.ControlAnticipos<><T>Cobrar Pedido<T>) y (Venta:Venta.OrigenTipo<><T>VMOS<T>)))<BR>  Entonces<BR>    Asigna(Info.ID, Venta:Venta.ID)<BR>    Asigna(Info.Cerrado, Falso)<BR>    Asigna(Info.VentaCobroDevolucion, MovTipoEn(<T>VTAS<T>, Venta:Venta.Mov, (VTAS.VP, VTAS.SD, VTAS.B, VTAS.D, VTAS.DF)))<BR>    Forma(<T>VentaCobro<T>)<BR>  Sino<BR>    Si<BR>      (Venta:Venta.Estatus en (EstatusSinAfectar, EstatusBorrador, EstatusPorConfirmar)) o ((MovTipo(<T>VTAS<T>,Venta:Venta.Mov)=VTAS.S) y (Venta:Venta.Estatus=EstatusPorConfirmar))<BR>    Entonces<BR>      Si(Config.CompraVentaSinIVA y (Suma(VentaD:Impuesto)=0.0) y (Suma(VentaD:Importe)>0.0), Si(Confirmacion(<T>Movimiento sin Impuestos<T>+NuevaLinea+<T>¿ Es Correcto ?<T>,BotonSi,BotonNo)=BotonNo,AbortarOperacion))<BR><BR>      Si<BR>        Empresa.CFD y SQL(<T>spVerMovTipoCFD :tEmpresa, :tModulo, :tMov, :nID<T>, Empresa, Afectar.Modulo, Afectar.Mov, Afectar.ID)<BR>      Entonces<BR>        EjecutarSQL(<T>spAfectar :tModulo, :nID, :tAccion<T>, Afectar.Modulo, Afectar.ID, <T>CONSECUTIVO<T>)<BR>        Si(no CFD.Generar(Afectar.Modulo, Afectar.ID),  Forma.ActualizarForma AbortarOperacion)<BR>        Asigna(Afectar.EnviarCFD, SQL(<T>SELECT EnviarAlAfectar FROM EmpresaCFD WHERE Empresa=:tEmpresa<T>, Empresa))<BR>      Fin<BR><BR>      Si<BR>        Venta:Venta.Estatus=EstatusPorConfirmar<BR>      Entonces<BR>        Caso MovTipo(<T>VTAS<T>, Venta:Venta.Mov)<BR>          Es VTAS.S  Entonces Dialogo(<T>GenerarServicioPorConfirmar<T>)<BR>          Es VTAS.CS Entonces Dialogo(<T>GenerarCotizacionServicioAMRA<T>)<BR>          Es VTAS.OP Entonces Dialogo(<T>GenerarOportunidad<T>)<BR>          Es VTAS.C  Entonces<BR>                      Si (Venta:Venta.OrigenTipo=<T>VTAS<T>) y (MovTipo(<T>VTAS<T>, Venta:Venta.Origen)=VTAS.S)<BR>                       Entonces<BR>                         Asigna(Afectar.Mov, Venta:Venta.Origen)<BR>                         Asigna(Afectar.MovID, Venta:Venta.OrigenID)<BR>                         Asigna(Afectar.ID, SQL(<T>SELECT ID FROM Venta WHERE Empresa = :tEmpresa AND Mov = :tMov AND MovID = :tMovID AND Estatus NOT IN (<T>+Comillas(EstatusSinAfectar)+<T>, <T>+Comillas(EstatusCancelado)+<T>)<T>, Empresa, Afectar.Mov, Afectar.MovID))<BR>                         Dialogo(<T>AfectarServicio<T>)<BR>                       Sino<BR>                         Dialogo(<T>GenerarCotizacion<T>)<BR>                     Fin<BR>          Es VTAS.CO Entonces Dialogo(<T>GenerarContrato<T>)<BR>          Sino Afectar(Afectar.Modulo, Afectar.ID, Afectar.Mov, Afectar.MovID, <T>Todo<T>, <T><T>, <T>Venta<T>)<BR>        Fin<BR>      Sino<BR>        Si<BR>          Config.Partidas y (MovTipo(<T>VTAS<T>, Venta:Venta.Mov)=VTAS.R)<BR>        Entonces<BR>          Forma(<T>AfectarPartidasRemision<T>)<BR>        Sino<BR>          Afectar(Afectar.Modulo, Afectar.ID, Afectar.Mov, Afectar.MovID, <T>Todo<T>, <T><T>, <T>Venta<T>)<BR>           Si SQL(<T>spMovReporteIntelisis :tEmpresa, :tModulo, :tMov, :nID, :nAfectar<T>, Empresa, Afectar.Modulo, Afectar.Mov, Afectar.ID, 1) Entonces<BR>            Asigna(Info.Reporte, SQL(<T>spMovFormatoIntelisis :tEmpresa, :tModulo, :tMov, :nID<T>, Empresa, Afectar.Modulo, Afectar.Mov, Afectar.ID))<BR>            Asigna(Info.RutaArchivo, SQL(<T>spMovRutaIntelisis :tEmpresa, :tModulo, :tMov, :nID<T>, Empresa, Afectar.Modulo, Afectar.Mov, Afectar.ID))<BR>            ReportePDF(Info.Reporte,Afectar.ID,Info.RutaArchivo)<BR>            EjecutarSQL(<T>spMovEnviarIntelisis :tEmpresa,:tModulo,:tMov,:nID<T>,Empresa, Afectar.Modulo, Afectar.Mov, Afectar.ID)<BR>          Fin<BR>        Fin<BR>      Fin<BR>      CFD.Confirmar<BR>      Si(Afectar.EnviarCFD, CFD.Enviar(Afectar.Modulo, Afectar.ID))<BR>    Sino<BR>      Asigna(Info.Modulo, <T>VTAS<T>)<BR>      Asigna(Info.Mov, Venta:Venta.Mov)<BR>      Asigna(Info.MovID, Venta:Venta.MovID)<BR>      Asigna(Afectar.Base, <T>Pendiente<T>)<BR>      Asigna(Afectar.GenerarMov, <T><T>)<BR>      Asigna(Afectar.FormaCaptura, <T>Venta<T>)<BR>      Si<BR>        (ConfigModulo(Info.Modulo, <T>FlujoAbierto<T>) = <T>Si<T>) y (no MovTipoEn(<T>VTAS<T>, Venta:Venta.Mov, (VTAS.F, VTAS.FAR, VTAS.FB)))<BR>      Entonces<BR>        Si<BR>          Forma(<T>GenerarMovFlujo<T>)<BR>        Entonces<BR>          Caso Info.MovGenerar<BR>            Es <T>(Reservar)<T>    Entonces Si(Usuario.Reservar,    Dialogo(<T>Reservar<T>),     Precaucion(<T>No Tiene Acceso<T>))<BR>            Es <T>(Desreservar)<T> Entonces Si(Usuario.Desreservar, Dialogo(<T>DesReservar<T>),  Precaucion(<T>No Tiene Acceso<T>))<BR>            Es <T>(Asignar)<T>     Entonces Si(Usuario.Asignar,     Dialogo(<T>Asignar<T>),      Precaucion(<T>No Tiene Acceso<T>))<BR>            Es <T>(Desasignar)<T>  Entonces Si(Usuario.DesAsignar,  Dialogo(<T>DesAsignar<T>),   Precaucion(<T>No Tiene Acceso<T>))<BR>            Es <T>(Facturacion Rapida)<T>          Entonces ProcesarSQL(<T>spFacturacionRapida :nID, :tUsuario, :tEmpresa<T>,    Afectar.ID, Usuario, Empresa)<BR>            Es <T>(Facturacion Rapida Agrupada)<T> Entonces ProcesarSQL(<T>spFacturacionRapida :nID, :tUsuario, :tEmpresa, 1<T>, Afectar.ID, Usuario, Empresa)<BR>            Es <T>(Generar Orden Transferencia)<T><BR>             Entonces<BR>               Si<BR>                 Usuario.PedidoGenerarOT y Dialogo(<T>EstaSeguro<T>)<BR>               Entonces<BR>                 Si<BR>                   Usuario.PedidoGenerarOTAbrir<BR>                 Entonces<BR>                   FormaPos(<T>Inv<T>, SQLEnLista(<T>spPedidoGenerarOT :tEmpresa, :nID, :nSucursal, :tUsuario, :tMov, @VerID = 1<T>, Empresa, Venta:Venta.ID, Sucursal, Usuario, ConfigMov.InvOrdenTransferencia))<BR>                 Sino<BR>                   ProcesarSQL(<T>spPedidoGenerarOT :tEmpresa, :nID, :nSucursal, :tUsuario, :tMov<T>, Empresa, Venta:Venta.ID, Sucursal, Usuario, ConfigMov.InvOrdenTransferencia)<BR>                 Fin<BR>               Sino<BR>                 Precaucion(<T>No Tiene Acceso<T>)<BR>               Fin<BR>            Sino<BR>              Asigna(Afectar.GenerarMov, Info.MovGenerar)<BR>              Asigna(Info.TituloDialogo, <T>Generar <T>+Comillas(Info.MovGenerar)+<T> de <T>+Comillas(Info.Mov))<BR>              Dialogo(<T>GenerarPedidoPendiente<T>)<BR>          Fin<BR>        Fin<BR>      Sino<BR>        Caso MovTipo(<T>VTAS<T>, Venta:Venta.Mov)<BR>          Es VTAS.PR  Entonces Dialogo(<T>GenerarPresupuestoVentas<T>)<BR>          Es VTAS.P   Entonces Dialogo(Info.Dialogo)<BR>          Es VTAS.S   Entonces Dialogo(<T>GenerarServicio<T>)<BR>          Es VTAS.R   Entonces Dialogo(<T>GenerarRemision<T>)<BR>          Es VTAS.VCR Entonces Dialogo(<T>GenerarRemisionConsignacion<T>)<BR>          Es VTAS.VC  Entonces Dialogo(<T>GenerarVentaConsignacion<T>)<BR>          Es VTAS.F   Entonces Dialogo(<T>GenerarFactura<T>)<BR>          Es VTAS.FAR Entonces Dialogo(<T>GenerarFactura<T>)<BR>          Es VTAS.FB  Entonces Dialogo(<T>GenerarFactura<T>)<BR>          Es VTAS.FR  Entonces Dialogo(<T>GenerarFacturaRecurrente<T>)<BR>          Es VTAS.SD  Entonces Dialogo(<T>GenerarSolicitudDevolucion<T>)<BR>        Fin<BR>      Fin<BR>    Fin<BR>  Fin<BR>Fin<T>
+
+; - FIN  - DDC Carga VIN -----------------------------------------------------------------------------------------------------
+
+;KIHA Rep 00 Replica Formas de Pago
+
+[Condicion.tbl/CFD_metodoDePago]
+TipoDatos=Texto
+AyudaEnCaptura=Expresion
+AyudaMemRenglones=12
+AyudaMemOpc=Validar captura en la lista
+ValidacionConCondiciones=S
+ValidacionCondicion=SQL(<T>SELECT 1 FROM SATFormaPago WHERE Descripcion = :tDesc<T>, CFD_metodoDePago) > 0
+ValidacionMensajeError=<T>Valor Incorrecto<T>
+Formula=SQLEnLista(<T>SELECT Descripcion FROM SATFormaPago<T>)
+
+
+[Condicion.tbl/CFD_formaDePago]
+TipoDatos=Texto
+AyudaEnCaptura=Expresion
+AyudaMemRenglones=12
+AyudaMemOpc=Validar captura en la lista
+ValidacionConCondiciones=S
+ValidacionMensajeError=<T>Valor Incorrecto<T>
+ValidacionCondicion=SQL(<T>SELECT 1 FROM SATMetodoPago WHERE Clave = :tClave<T>, CFD_formaDePago) > 0
+Formula=SQLEnLista(<T>SELECT Clave FROM SATMetodoPago<T>)
+
+[MenuCfgFiscal.dlg/Dialogo]
+PosicionInicialArriba=275
+PosicionInicialAlturaCliente=138
+
+[MenuCfgFiscal.dlg/Dialogo.ListaAcciones]
+(Inicio)=CatalogosSAT
+CatalogosSAT=MapeoIntelisis
+MapeoIntelisis=ObligacionFiscal
+
+[MenuCfgFiscal.dlg/Acciones.CatalogosSAT]
+Nombre=CatalogosSAT
+Boton=0
+NombreDesplegar=&Maestros SAT
+EnMenu=S
+EnBarraAcciones=S
+TipoAccion=Dialogos
+ClaveAccion=MenuCfgFiscalSAT
+Activo=S
+Visible=S
+
+[MenuCfgFiscal.dlg/Acciones.MapeoIntelisis]
+Nombre=MapeoIntelisis
+Boton=0
+NombreDesplegar=&Mapeos Intelisis
+EnMenu=S
+EnBarraAcciones=S
+TipoAccion=Dialogos
+ClaveAccion=MenuCtaDireccionFiscal
+Activo=S
+Visible=S
+
+;FIN Rep 0000 KIHA Replica Formas de Pago
+
+; - NGML  | - Rep 0000 (Modificaciones para configuracion de polizas por UEN) -  Replica JIMC | AUTOMOTORES REYNOSA- Rep 0000 --
+[UEN.tbl/Tabla]
+ListaCampos.Cambios=Insertar<TAB>Cuenta<TAB>3
+SQL.Cambios=Insertar<TAB> Cuenta,<TAB>4
+
+[UEN.tbl/cuenta]
+Clave=cuenta
+Nombre=cuenta
+Visible=S
+TamanoValidacion=20
+TipoDatos=Texto
+Tamano=20
+AyudaEnCaptura=Vista
+AyudaForma=ctalista
+AyudaVista=CtaLista
+AyudaCampo=CtaLista.Cuenta
+
+[UEN.vis/Vista]
+ListaCampos.Cambios=Insertar<TAB>UEN.Cuenta<TAB>3
+SQL.Cambios=Insertar<TAB>  UEN.Cuenta,<TAB>4
+
+[UEN.vis/UEN.cuenta]
+Clave=UEN.cuenta
+Nombre=cuenta
+Visible=S
+TamanoValidacion=20
+TipoDatos=Texto
+Tamano=20
+AyudaEnCaptura=Vista
+AyudaForma=ctalista
+AyudaVista=CtaLista
+AyudaCampo=CtaLista.Cuenta
+LigaTabla=UEN
+LigaCampo=cuenta
+Ligado=S
+TipoCampo=Tabla
+ClaveBDE=cuenta
+
+[UEN.frm/Lista]
+ListaEnCaptura.Cambios=Insertar<TAB>UEN.Cuenta<TAB>3
+
+[UEN.frm/Lista.UEN.Cuenta]
+Carpeta=Lista
+Clave=UEN.cuenta
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=20
+ColorFondo=Blanco
+
+[MovTipoContAuto.tbl/Cuenta]
+Formula=Lista(<T>por Omision<T>, <T>Tipo Contacto<T>, <T>Rama Contacto<T>, <T>Retencion Contacto<T>, <T>Contacto<T>, <T>Concepto<T>, <T>Concepto Origen<T>)+<BR>Si(Info.Modulo en (<T>VTAS<T>, <T>COMS<T>, <T>INV<T>, <T>PROD<T>, <T>AF<T>), NuevaLinea+Lista(<T>Rama Articulo<T>, <T>Categoria AF/Fiscal<T>))+<BR>Si(Info.Modulo en (<T>VTAS<T>, <T>COMS<T>, <T>INV<T>, <T>PROD<T>), NuevaLinea+Lista(<T>Almacen/AF<T>, <T>Articulo<T>, <T>Articulo (Cuenta 2)<T>, <T>Articulo (Cuenta 3)<T>, <T>Categoria AF<T>))+<BR>Si(Info.Modulo en (<T>VTAS<T>, <T>GAS<T>), NuevaLinea+<T>Clasificacion<T>)+<BR>Si(Info.Modulo en (<T>VTAS<T>, <T>COMS<T>, <T>GAS<T>, <T>CXC<T>, <T>CXP<T>, <T>FIS<T>), NuevaLinea+<T>Tabla %<T>)+<BR>Si(Info.Modulo en (<T>VTAS<T>, <T>COMS<T>, <T>CXC<T>, <T>CXP<T>, <T>DIN<T>), NuevaLinea+Lista(<T>Lote Fijo<T>, <T>Lote Fijo Especifico<T>))+<BR>Si(Info.Modulo = <T>NOM<T>, NuevaLinea+<T>Concepto Recibo<T>+NuevaLinea+<T>Concepto Recibo 2<T>)+<BR>Si(Info.Modulo = <T>AF<T>, NuevaLinea+Lista(<T>Almacen/AF<T>, <T>Categoria AF<T>))+<BR>Si(Info.Modulo en (<T>DIN<T>, <T>CXC<T>, <T>CXP<T>, <T>GAS<T>), NuevaLinea+<T>Cuenta Dinero<T>)+<BR>Si(Info.Modulo en (<T>CXC<T>, <T>CXP<T>), NuevaLinea+<T>Tipo Contacto Aplica<T>)+<BR>Si(Info.Modulo = <T>DIN<T>, NuevaLinea+Lista(<T>Cuenta Destino<T>,<T>Forma Pago<T>))+<BR>NuevaLinea+<T>Cuenta Dinamica<T>+<BR>NuevaLinea+SQLEnLista(<T>SELECT Cuenta FROM MovTipoContAutoCuentaExtra WHERE Modulo=:tModulo<T>, Info.Modulo)+<BR>Lista(<T>Tipo Imp 1 Acreedora<T>, <T>Tipo Imp 1 Deudora<T>, <T>Tipo Imp 2 Acreedora<T>, <T>Tipo Imp 2 Deudora<T>, <T>Tipo Imp 3 Acreedora<T>, <T>Tipo Imp 3 Deudora<T>,<BR><T>Tipo Ret 1 Acreedora<T>, <T>Tipo Ret 1 Deudora<T>, <T>Tipo Ret 2 Acreedora<T>, <T>Tipo Ret 2 Deudora<T>, <T>Tipo Ret 3 Acreedora<T>, <T>Tipo Ret 3 Deudora<T>)+<BR>Si(Info.Modulo en (<T>CXC<T>, <T>CXP<T>), NuevaLinea+Lista(<T>Tipo Contacto Aplica<T>,<T>UEN<T>, <T>UEN Origen<T> ))+<BR>Si(Info.Modulo en (<T>VTAS<T>,<T>COMS<T>,<T>GAS<T>), NuevaLinea+ <T>UEN<T>)+<BR>Si(Info.Modulo = <T>INV<T>, NuevaLinea+Lista(<T>Almacén Origen<T>,<T>Almacén Destino<T>))
+; - NGML  | - Rep 0000 (Modificaciones para configuracion de polizas por UEN) -  Replica JIMC | AUTOMOTORES REYNOSA- Rep 0000 --
+
+;KIHA Rep 00 Replica Formas de Pago
+
+;[MenuPrincipal.dlg/Dialogo]
+;ListaAcciones.Cambios=<BR>Insertar<TAB>Herramienta.FiscalMetodoPago<TAB>198
+
+;[MenuPrincipal.dlg/Acciones.Herramienta.FiscalMetodoPago]
+;Nombre=Herramientas.FiscalMetodoPago
+;Boton=0
+;NombreDesplegar=Fiscal Método Pago
+;EnMenu=S
+;TipoAccion=Dialogos
+;ClaveAccion=FiscalMetodoPago
+;Activo=S
+;Menu=&Herramientas
+;Visible=S
+
+
+;FIN Rep 0000 KIHA Replica Formas de Pago
+
+;OLD - Sin Rep - Cambio para visualizar la forma de cobro en cxc
+[Cxc.tbl/FormaCobro]
+;CondicionDespliege=(no ConDesglose)
+CondicionDespliege=
+
+
+; LIGO | Check activado en movimientos de tipo Cobro. Rep 159 Automotores Reynosa, Inlosa. 
+[Cxc.tbl/AplicaManual]
+ValorRefrescar=Si(MovTipoEn(<T>CXC<T>, Cxc:Cxc.Mov, (CXC.C)),Verdadero,Config.CxcAplicaManualDef)
+
+
+;JCV Rep 031 Modificar Agente en Edicion Campos
+[Venta.tbl/Agente]
+CondicionEdicion=Vacio(AnexoID) y (((no Usuario.BloquearAgente) y (Estatus en (EstatusSinAfectar, EstatusPorConfirmar))) o ((Estatus en (EstatusPendiente,EstatusPorAutorizar,EstatusConcluido)) y Usuario.ModificarAgente))
+
+
+;JCV Permisos Especiales
+[Usuario.frm/Forma]
+PosicionInicialIzquierda=185
+PosicionInicialArriba=64
+PosicionInicialAncho=728
+PosicionInicialAlturaCliente=559
+ListaAcciones.Cambios=Insertar<TAB>PermisosEspeciales<TAB>7
+
+[Usuario.frm/Acciones.PermisosEspeciales]
+Nombre=PermisosEspeciales
+Boton=47
+NombreEnBoton=S
+Menu=&Edición
+NombreDesplegar=Permisos Especiales
+EnBarraHerramientas=S
+EnMenu=S
+EspacioPrevio=S
+TipoAccion=Formas
+ClaveAccion=Permisos
+Activo=S
+Visible=S
+Antes=S
+AntesExpresiones=Asigna(Info.Usuario, Usuario:Usuario.Usuario)
+
+;;--------------------------- INICIO zCFDFlex1.ESP ---------------------;;
+[Venta.frm/Acciones.Imprimir]
+ConCondicion=S
+EjecucionCondicion=Si<BR>  SQL(<T>spVerMovTipoCFD :tEmpresa, :tModulo, :tMov<T>, Empresa, Forma.Modulo, Venta:Venta.Mov)<BR>Entonces<BR>  Si<BR>    Usuario.Digitalizar<BR>  Entonces<BR>    Verdadero<BR>  Sino<BR>    Falso<BR>  Fin<BR>Sino<BR>  Verdadero<BR>Fin
+EjecucionMensaje=<T>No Tiene privilegios para imprimir Documentos Fiscales Digitales<T>
+EjecucionConError=S
+Expresion=Asigna(Info.Descripcion, SQL(<T>EXEC spAbrirAnexo :tModulo, :nID<T>, <T>VTAS<T>, Venta:Venta.ID))<BR>Si (Info.Descripcion <> NULO) Y (Archivo.Leer(Info.Descripcion) <> <T><T>)<BR>Entonces<BR>  VerImagen(<T><T>, Info.Descripcion)<BR>Sino<BR>  ReporteImpresora(ReporteMovImpresora(Info.SubModuloVenta, Venta:Venta.Mov, Venta:Venta.Estatus), Venta:Venta.ID)<BR>Fin
+;ActivoCondicion=Usuario.ImprimirMovs y SQL(<T>EXEC xpMostrarAccion :tEmpresa, :tMov, :tID,:tModulo, :tAccion<T>, Empresa, Venta:Venta.Mov, Venta:Venta.ID,<T>VTAS<T>,<T>IMPRIMIR<T>)
+
+[Venta.frm/Acciones.RepPantalla]
+Expresion=Asigna(Info.Descripcion, SQL(<T>EXEC spAbrirAnexo :tModulo, :nID<T>, <T>VTAS<T>, Venta:Venta.ID))<BR>Si (Info.Descripcion <> NULO) Y (Archivo.Leer(Info.Descripcion) <> <T><T>)<BR>Entonces<BR>  VerImagen(<T><T>, Info.Descripcion)<BR>Sino<BR>  ReportePantalla(ReporteMovPantalla(Info.SubModuloVenta, Venta:Venta.Mov, Venta:Venta.Estatus), Venta:Venta.ID)<BR>Fin
+;ActivoCondicion=Usuario.PreliminarMovs y SQL(<T>EXEC xpMostrarAccion  :tEmpresa,  :tMov,  :tID,:tModulo, :tAccion<T>, Empresa, Venta:Venta.Mov, Venta:Venta.ID,<T>VTAS<T>,<T>IMPRIMIR<T>)
+
+[Venta.frm/Acciones.Cancelar]
+Expresion=Asigna(Afectar.Modulo, <T>VTAS<T>)<BR>Asigna(Afectar.ID, Venta:Venta.ID)<BR>Asigna(Afectar.Mov, Venta:Venta.Mov) <BR>Asigna(Afectar.MovID, Venta:Venta.MovID)<BR>Asigna(Afectar.FormaCaptura, <T>Venta<T>)<BR>Asigna(Info.MovTipo, MovTipo(<T>VTAS<T>, Venta:Venta.Mov))<BR>Asigna(Info.Estatus, Venta:Venta.Estatus)<BR>Si <BR>  (Info.MovTipo en (VTAS.N,VTAS.FM)) y (Info.Estatus noen (EstatusSinAfectar, EstatusBorrador, EstatusPorConfirmar))<BR>Entonces<BR>  Asigna(Info.TituloDialogo, <T>Cancelar: <T>+Afectar.Mov+<T> <T>+Afectar.MovID)<BR>  Dialogo(<T>CancelarNota<T>)<BR>Sino<BR>  Si<BR>    (Info.Estatus=EstatusPendiente) y (Info.MovTipo en (VTAS.P,VTAS.S))<BR>  Entonces<BR>    Asigna(Info.TituloDialogo, <T>Cancelar: <T>+Afectar.Mov+<T> <T>+Afectar.MovID)<BR>    Dialogo(<T>CancelarVentaPendiente<T>)<BR>  Sino<BR>    Si<BR>      Asigna(Temp.Texto, <T><T>)<BR>      Si <BR>        (Config.CancelarFactura<><T>No<T>) y Vacio(Venta:Venta.AnticiposFacturados) y (Info.Estatus noen (EstatusSinAfectar, EstatusBorrador, EstatusPorConfirmar))<BR>      Entonces<BR>        Asigna(Temp.Fecha, SQL(<T>select getdate()<T>))<BR>        Si<BR>          Info.MovTipo en (VTAS.F, VTAS.FAR)<BR>        Entonces<BR>          Si             <BR>            (Mes(Temp.Fecha) > Mes(Venta:Venta.FechaEmision)) o (Año(Temp.Fecha) > Año(Venta:Venta.FechaEmision)) o ((Config.CancelarFactura=<T>Cambio Dia<T>) y (Dia(Temp.Fecha) > Dia(Venta:Venta.FechaEmision)) o (Config.CancelarFactura=<T>Si<T>) y (sql(<T>spvalidafactcancapp :nest, :nid, :tmov, :tmovid, :testatus<T>,estaciontrabajo,Venta:Venta.id,Venta:Venta.mov, Venta:Venta.movid, Venta:Venta.estatus)=1))<BR>          Entonces<BR>            Asigna(Temp.Texto, <T>Nota: Esta Cancelación va a Generar un Movimiento Contrario.<T>+NuevaLinea+NuevaLinea+NuevaLinea+NuevaLinea+NuevaLinea+NuevaLinea)<BR>          Fin<BR>        Fin<BR>      Fin<BR>      Precaucion(Temp.Texto+<T>¿ Esta seguro que desea cancelar el movimiento ?<T>+NuevaLinea+NuevaLinea+Afectar.Mov+<T> <T>+Afectar.MovID, BotonSi, BotonNo ) = BotonSi<BR>   Entonces<BR>      Cancelar(<T>VTAS<T>, Venta:Venta.ID, Afectar.Mov, Afectar.MovID, <T>Todo<T>, <T><T>, Afectar.FormaCaptura)<BR><BR>     Asigna(Afectar.AsignarID, SQL(<T>SELECT CancelacionID FROM Venta WHERE ID=:nID<T>, Venta:Venta.ID))<BR>     Si(ConDatos(Afectar.AsignarID), Asigna(Afectar.ID,Afectar.AsignarID))<BR><BR>     Si<BR>        Empresa.CFD y SQL(<T>spVerMovTipoCFD :tEmpresa, :tModulo, :tMov<T>, Empresa, Afectar.Modulo, Afectar.Mov)<BR>      Entonces<BR>        Si(no CFD.Generar(Afectar.Modulo, Afectar.ID), AbortarOperacion)<BR>        Si(SQL(<T>SELECT EnviarAlAfectar FROM EmpresaCFD WHERE Empresa=:tEmpresa<T>, Empresa), CFD.Enviar(Afectar.Modulo, Afectar.ID))<BR>        CFD.Confirmar<BR>      Fin<BR><BR>    Fin<BR>  Fin<BR>Fin
+ConCondicion=S
+EjecucionCondicion=Si<BR>SQL(<T>EXEC xpMostrarAccion  :tEmpresa,  :tMov,  :tID, :tModulo, :tAccion<T>, Empresa, Venta:Venta.Mov, Venta:Venta.ID,<T>VTAS<T>,<T>CANCELAR<T>)=Falso<BR>Entonces<BR>     Precaucion( <T>CFD - Este movimiento no se puede cancelar ya fue timbrado<T> )<BR>Sino<BR>    Verdadero<BR>Fin
+
+[Venta.frm/Acciones.GenerarCFDFlex]
+Nombre=GenerarCFDI
+Boton=127
+Menu=&Archivo
+NombreDesplegar=Generar CFDIBBBB
+EnMenu=S
+TipoAccion=Expresion
+EnBarraHerramientas=S
+Visible=S
+Expresion=Si Venta:Venta.Estatus = <T>CANCELADO<T><BR>Entonces<BR>    ProcesarSQL(<T>DECLARE @Ok int, @OkRef varchar(255) EXEC spCFDICancelacion :tmodulo, :nID, :tEstatus, :tEmpresa, :nSucursal, @Ok OUTPUT, @OkRef OUTPUT SELECT @OkRef<T>, <T>VTAS<T>, Venta:Venta.ID, Venta:Venta.Estatus, Empresa, Sucursal)<BR>Sino<BR>  Si SQL(<T>SELECT ISNULL(eDoc, 0) FROM EmpresaGral WHERE Empresa = :tEmpresa<T>, Empresa) y(SQL(<T>SELECT ISNULL(CFDFlex, 0) FROM EmpresaGral WHERE Empresa = :tEmpresa<T>, Empresa))<BR>  Entonces<BR>    ProcesarSQL(<T>EXEC spRegenerarCFDFlex :nEstacion, :tEmpresa, :tModulo, :nID, :tEstatus<T>, EstacionTrabajo, Empresa, <T>VTAS<T>, Venta:Venta.ID, Venta:Venta.Estatus)<BR>  Sino                       <BR>    Si Empresa.CFD y SQL(<T>spVerMovTipoCFD :tEmpresa, :tModulo, :tMov, :nID<T>, Empresa, <T>VTAS<T>, Venta:Venta.Mov, Venta:Venta.ID)<BR>    Entonces<BR>      Si(no CFD.Generar(<T>VTAS<T>, Venta:Venta.ID),  Forma.ActualizarForma AbortarOperacion)<BR>      Asigna(Afectar.EnviarCFD, SQL(<T>SELECT EnviarAlAfectar FROM EmpresaCFD WHERE Empresa=:tEmpresa<T>, Empresa))<BR>    Fin<BR>      CFD.Confirmar<BR>      Si(Afectar.EnviarCFD, CFD.Enviar(<T>VTAS<T>, Venta:Venta.ID))<BR>  Fin<BR>Fin<BR><BR>ActualizarVista<BR>ActualizarForma
+ActivoCondicion=(SQL(<T>EXEC xpMostrarAccion :tEmpresa, :tMov, :tID,:tModulo, :tAccion<T>, Empresa, Venta:Venta.Mov, Venta:Venta.ID,<T>VTAS<T>,<T>GENERARCFDI<T>)) y (SQL(<T>spVerMovTipoCFD :tEmpresa, :tModulo, :tMov, :nID<T>, Empresa, <T>VTAS<T>, Venta:Venta.Mov, Venta:Venta.ID))
+
+[Venta.frm/Forma]
+ListaAcciones.Cambios=Insertar<TAB>GenerarCFDFlex<TAB>25<BR>Insertar<TAB>ComplementosUsados<TAB>90<BR>Insertar<TAB>AnticiposRelacionados<TAB>91<BR>Insertar<TAB>CFDRelacionadoVentaSaldo<TAB>92<BR>Insertar<TAB>CFDIVentaTimbrada<TAB>93<BR>Insertar<TAB>Prospectos<TAB>94<BR>Insertar<TAB>Campains<TAB>95
+
+;amp
+
+[Venta.frm/Acciones.Campains.info]
+Nombre=info
+Boton=0
+TipoAccion=Expresion
+Expresion=Asigna(Info.VIN,Venta:Venta.ServicioSerie)
+Activo=S
+Visible=S
+
+[Venta.frm/Acciones.Campains.v]
+Nombre=v
+Boton=0
+TipoAccion=Formas
+ClaveAccion=frmCampain
+Activo=S
+Visible=S
+
+[Venta.frm/Acciones.Campains]
+Nombre=Campains
+Boton=93
+NombreEnBoton=S
+NombreDesplegar=Campains
+Multiple=S
+EnBarraHerramientas=S
+EnMenu=S
+ListaAccionesMultiples=(Lista)
+Activo=S
+Visible=S
+
+[Venta.frm/Acciones.Campains.ListaAccionesMultiples]
+(Inicio)=info
+info=v
+v=(Fin)
+
+[Venta.frm/Acciones.Prospectos]
+Nombre=Prospectos
+Boton=60
+NombreEnBoton=S
+NombreDesplegar=&Prospectos
+EnBarraHerramientas=S
+EnMenu=S
+TipoAccion=Formas
+ClaveAccion=CteProspecto
+Activo=S
+Visible=S
+;amp fin 
+
+[Venta.frm/Acciones.AnticiposRelacionados]
+Nombre=AnticiposRelacionados
+Boton=0
+Menu=&Edición
+NombreDesplegar=Anticipos Relacionados...
+EnMenu=S
+TipoAccion=Formas
+ClaveAccion=CFDRelacionadoAnticipos
+Antes=S
+Visible=S
+GuardarAntes=S
+ActivoCondicion=Venta:Venta.Estatus = <T>SINAFECTAR<T>
+AntesExpresiones=Asigna(Info.ID, Venta:Venta.ID)<BR>Asigna( Info.Modulo, <T>VTAS<T> )<BR>Asigna(Info.Cliente, Venta:Venta.Cliente)
+
+[Venta.frm/Acciones.CFDIVentaTimbrada]
+Nombre=CFDIVentaTimbrada
+Boton=0
+Menu=&Edición
+NombreDesplegar=CFDI Relacionados Ventas
+GuardarAntes=S
+EnMenu=S
+TipoAccion=Formas
+ClaveAccion=CFDRelacionadoVenta
+Activo=S
+Antes=S
+DespuesGuardar=S
+Visible=S
+ActivoCondicion=Venta:Venta.Estatus = <T>SINAFECTAR<T>
+AntesExpresiones=Asigna( Info.Cliente, Venta:Venta.Cliente )<BR>Asigna( Info.Modulo, <T>VTAS<T> )<BR>Asigna( Info.Id, Venta:Venta.ID )<BR>Asigna( Anexo.Mov, Venta:Venta.Mov )
+
+
+[Venta.frm/Acciones.ComplementosUsados]
+Nombre=ComplementosUsados
+Boton=18
+NombreEnBoton=S
+NombreDesplegar=Complemento Usados
+EnBarraHerramientas=S
+EnMenu=S
+Menu=&Otros
+Activo=
+Visible=
+ActivoCondicion=(Venta:Venta.Estatus = <T>SINAFECTAR<T>) o (SQL(<T>SELECT dbo.BuscarPermiso(:tclave, :tUsuario, :eSucursal, :tEmpresa)<T>,<T>ComplementosUsados<T>,Usuario,Sucursal,Empresa))
+VisibleCondicion=Venta:Venta.Mov en (<T>Factura Autos<T>,<T>eFactura Autos<T>,<T>FEL Unidad<T>,<T>FEL Flotilla<T>,<T>FEL Autofin<T>,<T>FEL Intercambio<T>,<T>FEL Complemento<T>,<T>FEL Usados<T>)
+EspacioPrevio=S
+TipoAccion=Expresion
+Expresion=Forma(<T>ComplementoUsados<T>)
+Antes=S
+AntesExpresiones=Asigna(Info.ID, Venta:Venta.ID)<BR>Asigna(Info.Mov, Venta:Venta.Mov)<BR>Asigna(Info.MovID, Venta:Venta.MovID)<BR>Asigna(Info.Estatus, Venta:Venta.Estatus)
+
+[Cxc.frm/Acciones.GenerarCFDFlex]
+Nombre=GenerarCFDI
+Boton=127
+Menu=&Archivo
+NombreDesplegar=Generar CFDI
+EnMenu=S
+TipoAccion=Expresion
+EnBarraHerramientas=S
+Visible=S
+Expresion=Si Cxc:Cxc.Estatus = <T>CANCELADO<T><BR>Entonces<BR>    ProcesarSQL(<T>DECLARE @Ok int, @OkRef varchar(255) EXEC spCFDICancelacion :tmodulo, :nID, :tEstatus, :tEmpresa, :nSucursal, @Ok OUTPUT, @OkRef OUTPUT SELECT @OkRef<T>, <T>CXC<T>, Cxc:cxc.ID, Cxc:Cxc.Estatus, Empresa, Sucursal)<BR>Sino<BR>  Si SQL(<T>SELECT ISNULL(eDoc, 0) FROM EmpresaGral WHERE Empresa = :tEmpresa<T>, Empresa) y(SQL(<T>SELECT ISNULL(CFDFlex, 0) FROM EmpresaGral WHERE Empresa = :tEmpresa<T>, Empresa))<BR>  Entonces<BR>    ProcesarSQL(<T>EXEC spRegenerarCFDFlex :nEstacion, :tEmpresa, :tModulo, :nID, :tEstatus<T>, EstacionTrabajo, Empresa, <T>CXC<T>, Cxc:Cxc.ID, Cxc:Cxc.Estatus)<BR>  Sino<BR>    Si Empresa.CFD y SQL(<T>spVerMovTipoCFD :tEmpresa, :tModulo, :tMov, :nID<T>, Empresa, <T>CXC<T>, Cxc:Cxc.Mov, Cxc:Cxc.ID)<BR>    Entonces<BR>      Si(no CFD.Generar(<T>CXC<T>, Cxc:Cxc.ID),  Forma.ActualizarForma AbortarOperacion)<BR>      Asigna(Afectar.EnviarCFD, SQL(<T>SELECT EnviarAlAfectar FROM EmpresaCFD WHERE Empresa=:tEmpresa<T>, Empresa))<BR>    Fin<BR>      CFD.Confirmar<BR>      Si(Afectar.EnviarCFD, CFD.Enviar(<T>CXC<T>, Cxc:Cxc.ID))<BR>  Fin<BR>Fin     <BR><BR>ActualizarVista<BR>ActualizarForma
+ActivoCondicion=(SQL(<T>EXEC xpMostrarAccion :tEmpresa, :tMov, :tID,:tModulo, :tAccion<T>, Empresa, Cxc:cxc.Mov, Cxc:cxc.ID,<T>CXC<T>,<T>GENERARCFDI<T>)) y (SQL(<T>spVerMovTipoCFD :tEmpresa, :tModulo, :tMov, :nID<T>, Empresa, <T>CXC<T>, Cxc:Cxc.Mov, Cxc:Cxc.ID))
+
+[Cxc.frm/Forma]
+ListaAcciones.Cambios=Insertar<TAB>GenerarCFDFlex<TAB>18
+
+
+[Cxc.frm/Acciones.Imprimir]
+Expresion=Asigna(Info.Descripcion, SQL(<T>EXEC spAbrirAnexo :tModulo, :nID<T>, <T>CXC<T>, Cxc:Cxc.ID))<BR>Si (Info.Descripcion <> NULO) Y (Archivo.Leer(Info.Descripcion) <> <T><T>)<BR>Entonces<BR>  VerImagen(<T><T>, Info.Descripcion)<BR>Sino<BR>  ReporteImpresora(ReporteMovImpresora(<T>CXC<T>, Cxc:Cxc.Mov, Cxc:Cxc.Estatus), Cxc:Cxc.ID)<BR>Fin
+;ActivoCondicion=Usuario.ImprimirMovs y SQL(<T>EXEC xpMostrarAccion :tEmpresa, :tMov, :tID,:tModulo, :tAccion<T>, Empresa,Cxc:Cxc.Mov, Cxc:Cxc.ID,<T>CXC<T>,<T>IMPRIMIR<T>)
+
+[Cxc.frm/Acciones.RepPantalla]
+Expresion=Asigna(Info.Descripcion, SQL(<T>EXEC spAbrirAnexo :tModulo, :nID<T>, <T>CXC<T>, Cxc:Cxc.ID))<BR>Si (Info.Descripcion <> NULO) Y (Archivo.Leer(Info.Descripcion) <> <T><T>)<BR>Entonces<BR>  VerImagen(<T><T>, Info.Descripcion)<BR>Sino<BR>  ReportePantalla(ReporteMovPantalla(<T>CXC<T>, Cxc:Cxc.Mov, Cxc:Cxc.Estatus), Cxc:Cxc.ID)<BR>Fin
+;ActivoCondicion=Usuario.PreliminarMovs y SQL(<T>EXEC xpMostrarAccion :tEmpresa, :tMov, :tID,:tModulo, :tAccion<T>, Empresa,Cxc:Cxc.Mov, Cxc:Cxc.ID,<T>CXC<T>,<T>IMPRIMIR<T>)
+
+[Cxc.frm/Acciones.Cancelar]
+ConCondicion=S
+EjecucionCondicion=Si<BR>    SQL(<T>EXEC xpMostrarAccion :tEmpresa, :tMov, :tID,:tModulo, :tAccion<T>, Empresa,Cxc:Cxc.Mov, Cxc:Cxc.ID,<T>CXC<T>,<T>CANCELAR<T>)=Falso<BR>Entonces<BR>     Precaucion( <T>CFD - Este movimiento no se puede cancelar ya fue timbrado<T> )<BR>Sino<BR>    Verdadero<BR>Fin  
+
+
+;;--------------------------- FINAL zCFDFlex1.ESP ---------------------;;
+
+
+;Agregar Metodo de Pago a Vista VentaExplorar
+
+[VentaExplorar.vis/Vista]
+ListaCampos.Cambios=Insertar<TAB>Venta.FormaPagoTipo<TAB>73
+SQL.Cambios=Insertar<TAB>Venta.FormaPagoTipo,<TAB>74
+
+[VentaExplorar.vis/Venta.FormaPagoTipo]
+Clave=Venta.FormaPagoTipo
+Nombre=FormaPagoTipo
+Visible=S
+TamanoValidacion=50
+Tamano=50
+TipoDatos=Texto
+LigaTabla=Venta
+LigaCampo=FormaPagoTipo]
+Ligado=S
+TipoCampo=Tabla
+ClaveBDE=FormaPagoTipo
+
+
+ 
+

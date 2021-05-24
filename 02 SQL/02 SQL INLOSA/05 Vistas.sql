@@ -20,22 +20,43 @@ WHERE ((V.Mov = 'Servicio' AND V.Estatus = 'PENDIENTE') OR (V.Mov = 'Cita Servic
 GO
 
 
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
  Creación: 12/02/2021
  Descripción:MOSTRAR CITAS EN ESTADO CONFIRMAR 
 */
-ALTER VIEW vwCA_SKCitas
+ALTER  VIEW [dbo].[vwCA_SKCitas]
 AS
 SELECT 'IDCita'=V.ID,V.Empresa,'Movimiento'=V.Mov,'Folio'=V.MovID,'Fecha'=V.FechaEmision,'Hora'=V.HoraRecepcion, V.Estatus, 
 C.SKCTE AS 'Cliente', C.SKNombreCompleto AS  'Nombre',A.Articulo,'Vehiculo'=A.Descripcion1,'Vin'=V.ServicioSerie,'Agente'=AG.Nombre,'Comentarios' = REPLACE(CONVERT(VARCHAR(255),V.Comentarios),'Creada desde APP SePa ',''),
-'Sucursal'=S.nombre,'DireccionSucursal'=S.direccion,S.longitud,S.latitud
+'Sucursal'=S.nombre,'DireccionSucursal'=S.direccion,'longitud'='','latitud' =''
 --,V.* 
 FROM Venta AS V 
 INNER JOIN CA_Venta AS C ON V.ID=C.ID
 INNER JOIN Art AS A ON V.ServicioArticulo=A.Articulo
 INNER JOIN Agente AS AG ON V.Agente=AG.Agente
-INNER JOIN vwCA_SePaBranchAddress AS S ON V.Sucursal=S.id_intelisis
+INNER JOIN Sucursal AS S ON V.Sucursal=S.Sucursal
 WHERE V.Mov='Cita Servicio' AND V.Estatus='CONFIRMAR'
-AND V.FechaEmision>=CONVERT(VARCHAR(10),GETDATE(),126)  + 'T' +'00:00:00.000'
+--AND V.FechaEmision>=CONVERT(VARCHAR(10),GETDATE(),126)  + 'T' +'00:00:00.000'
+GO
+
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+/* =============================================
+ Autor:Giovanni Trujillo Silvas
+ Creación: 09/06/2020
+ Descripción: HORARIOS POR JORNADA
+*/
+CREATE VIEW [dbo].[vwCA_SePaHorarios]
+AS
+SELECT DISTINCT JT.Fecha,YEAR(Fecha) AS 'Anio',MONTH(Fecha) AS 'Mes',A.SucursalEmpresa as 'Sucursal' FROM JornadaTiempo AS JT
+INNER JOIN Agente AS A ON JT.Jornada=A.Jornada AND
+A.Tipo = 'Asesor' AND A.Estatus = 'Alta' 
+
 GO

@@ -12,8 +12,8 @@ ListaCampos=(Lista)
 ControlID=S
 CampoID=ID
 LlavePrimaria=ID
-SQL=(Lista)
 CamposBusquedaRapida=(Lista)
+SQL=(Lista)
 [ID]
 Clave=ID
 Nombre=ID
@@ -38,6 +38,7 @@ AyudaEnCaptura=Vista
 AlCambiar=Asigna(Info.Articulo ,  SQL( <T>SELECT Descripcion1 FROM ART WHERE Articulo=:tArt<T>,Clave ) )
 ConRefrescar=S
 ListaRefrescar=Descripcion
+AyudaMultiple=S
 [Descripcion]
 Clave=Descripcion
 Nombre=Descripcion
@@ -50,6 +51,12 @@ Tamano=100
 
 ValorRefrescar=Info.Articulo
 AlCambiar=Info.Articulo
+
+
+
+
+
+
 
 
 
