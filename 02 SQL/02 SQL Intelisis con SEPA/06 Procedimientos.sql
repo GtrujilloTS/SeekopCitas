@@ -4,6 +4,210 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
+ Autor:Giovanni Trujillo Silvas
+ Creación: 05/06/2020
+ Descripción:Genera los horarios disponibles para los agentes por un dia espeficifico
+*/
+CREATE PROCEDURE [dbo].[xpCA_HorarioAgenteNombres](@Sucursal int,@Anio VARCHAR(4),@Mes VARCHAR(2),@Dia VARCHAR(2), @Interfaz VARCHAR(20))
+AS
+BEGIN
+/*GTS|Inicio|Funcion para obtener un horario de dia dependiendo de la la hora de la jornada y los minutos de recepcion*/
+SET NOCOUNT ON
+DECLARE
+@Recepcion		INT ,
+@Inicio			VARCHAR(5),
+@IFin			VARCHAR(5),
+@FinI			VARCHAR(5),
+@Fin			VARCHAR(5),
+@Hora			VARCHAR(5),
+@Jornada		VARCHAR(50),
+@FechaIni		datetime,
+@FechaFin		datetime,
+@Agente			VARCHAR(10),
+@HoraMargen		INT			/*PERMITE DAR UN MARGEN DE TIEMPO PARA AGENDAR O MOSTRAR HORARIOS*/
+
+SELECT @Recepcion = CCTRecepcion
+    FROM Sucursal 
+   WHERE Sucursal = @Sucursal 
+
+IF EXISTS (SELECT * FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal)
+BEGIN 
+	SELECT @HoraMargen = ISNULL(HoraMargenCita,0) FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
+END	
+ELSE 
+	SET @HoraMargen=0
+
+DECLARE @HorariosJornadas TABLE
+(
+Hora	VARCHAR(5),
+Jornada	VARCHAR(50)
+)
+
+IF ISNULL(@Recepcion,'') =''
+BEGIN
+	SELECT 'No hay Horario Disponible'
+	RETURN
+END
+
+
+---------------BUSCAMOS LOS ASESORES O TECNICOS CON UNA JORNADA ASIGNADA ------------------------------
+IF @Interfaz='SePa'
+BEGIN 
+	DECLARE HorarioJornada CURSOR FOR   
+	SELECT DISTINCT Jornada FROM Agente 
+	WHERE Tipo IN ('Asesor','Mecanico')  AND Estatus = 'Alta' 
+	--AND Familia = 'Recepcion'
+	AND NULLIF(Jornada,'') IS NOT NULL AND SucursalEmpresa =@Sucursal
+END ELSE
+BEGIN 
+	DECLARE HorarioJornada CURSOR FOR   
+	SELECT DISTINCT Jornada FROM Agente 
+	WHERE Tipo IN ('Asesor','Mecanico')  AND Estatus = 'Alta' 
+	--AND Familia = 'Recepcion'
+	AND NULLIF(Jornada,'') IS NOT NULL AND SucursalEmpresa =@Sucursal
+END
+------------------------------------------------------------------
+
+OPEN HorarioJornada  
+FETCH NEXT FROM HorarioJornada INTO @Jornada  
+WHILE @@FETCH_STATUS = 0  
+BEGIN  
+	-------------------------SE SACA EL INICIO, FIN Y DESCANSOS DE LAS HORAS DE CADA JORNADA ------------------------------------
+	SELECT @Hora=null
+    SELECT @Inicio=MIN(CONVERT(varchar(5), Entrada, 108)),@IFin=MIN(CONVERT(varchar(5), Salida, 108)),
+	@FinI=MAX(CONVERT(varchar(5), Entrada, 108)),@Fin=MAX(CONVERT(varchar(5), Salida, 108)) 
+	FROM JornadaTiempo WHERE Jornada in(@Jornada) 
+	AND YEAR(Fecha) = @Anio AND MONTH(Fecha) = @Mes AND DAY(Fecha)=@Dia
+	-------------------------------------------------------------------------------------------------------------------------
+	
+	---SE BUSCA QUE LA HORA DE INICO ESTE ENEL RANGO DE INICIO Y HORA DE COMIDA
+	WHILE ISNULL(@Hora,@Inicio) BETWEEN @Inicio AND @IFin--< @IFin  
+	BEGIN 
+		--SI LA HORA ES NULL QUIERE DECIR QUE ES EL PRIMER HORARIO Y SE LE ASIGNA EL INICIO DE CASO CONTRARIO SE LE INCREMENTA LOS MINITOS DE TIEMPO EN RECEPCION 
+		IF @Hora IS NULL
+			SELECT @Hora=@Inicio
+		ELSE
+			SELECT @Hora = CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108)
+		
+		---SI LA HORA ES MENOR A LA HORA DE COMIDA LO ASIGNA A LA VARIABLE TABLA 
+		IF @Hora < @IFin --OR @Hora > @FinI
+			INSERT INTO @HorariosJornadas VALUES(@Hora,@Jornada)
+	END
+
+
+	----SI LA HORA ES MENOR A LA HORA DE REGRESO DE COMIDA, LE ASIGNA LA HORA DE INICIO DE COMIDA
+	IF @Hora<@FinI
+		SET @Hora=@FinI
+	
+
+	WHILE @Hora BETWEEN @FinI AND @Fin  
+	BEGIN 
+		
+		---INCREMENTA LOS MITUTOS DE RECEPCION A CADA HORA HASTA LLEGAR AL HORARIO DE SALIDA 
+		SELECT @Hora = CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@FinI)), 108)
+		IF @Hora < @Fin
+			INSERT INTO @HorariosJornadas VALUES(@Hora,@Jornada)
+	END
+   
+FETCH NEXT FROM HorarioJornada INTO @Jornada  
+END  
+  
+CLOSE HorarioJornada  
+DEALLOCATE HorarioJornada  
+
+
+DECLARE @HorarioAgentes TABLE
+(
+Agente  VARCHAR(10),
+Fecha	DATETIME,
+Hora	VARCHAR(5)
+)
+
+--- EXTRAE LOS ASESORES JUNTO CON SUS JORNADAS Y HORARIOS DISPONIBLES 
+	IF @Interfaz='SePa'
+	BEGIN
+		DECLARE HorarioAgentes CURSOR FOR   
+		SELECT  A.Jornada,A.Agente,HJ.Hora FROM Agente  AS A
+		INNER JOIN @HorariosJornadas AS HJ ON A.Jornada=HJ.Jornada
+		WHERE A.Tipo IN ('Asesor') AND A.Estatus = 'Alta' 
+		--AND Familia = 'Recepcion'
+		AND NULLIF(A.Jornada,'') IS NOT NULL AND A.SucursalEmpresa =@Sucursal;
+	END
+	ELSE
+	BEGIN
+		DECLARE HorarioAgentes CURSOR FOR   
+		SELECT  A.Jornada,A.Agente,HJ.Hora FROM Agente  AS A
+		INNER JOIN @HorariosJornadas AS HJ ON A.Jornada=HJ.Jornada
+		WHERE A.Tipo IN ('Asesor','Mecanico') AND A.Estatus = 'Alta' 
+		--AND Familia = 'Recepcion'
+		AND NULLIF(A.Jornada,'') IS NOT NULL AND A.SucursalEmpresa =@Sucursal;
+	END
+
+OPEN HorarioAgentes  
+FETCH NEXT FROM HorarioAgentes INTO @Jornada,@Agente,@Hora
+WHILE @@FETCH_STATUS = 0  
+BEGIN  
+	
+	----ASIGNA EL HORARIO POR DIA Y HORA
+	SELECT	@FechaIni =CONVERT(datetime, @Anio+'-'+REPLACE(STR(@Mes,2),' ','0')+'-'+REPLACE(STR(@Dia,2),' ','0')+'T'+@Hora+':00.000',126)
+		,@FechaFin = DATEADD(MI,ISNULL(@Recepcion,0),@FechaIni);
+	---SE BUSCA QUE NO HEXISTA UNA CITA U SERVICIO EN ESE HORARIO, DE EXISTIR SIMPLEMENTE NO CONTAMOS A ESE ASESOR PAR ESA HORA PROPUESTA Y SALTA AL SIGUIENTE
+	IF NOT EXISTS(	SELECT * FROM vwCA_CCVistaAgentes 	WHERE Agente = @Agente AND (dtRequeridaIni BETWEEN @FechaIni AND @FechaFin 	OR dtRequeridaFin BETWEEN @FechaIni AND @FechaFin ))
+	BEGIN
+		INSERT INTO @HorarioAgentes Values(@Agente,@FechaIni,@Hora)
+	END
+		
+	FETCH NEXT FROM HorarioAgentes INTO @Jornada,@Agente,@Hora  
+END   
+CLOSE HorarioAgentes  
+DEALLOCATE HorarioAgentes  
+
+IF @Interfaz='SePa'
+BEGIN
+	IF (SELECT TOP 1 CONVERT(VARCHAR(10),Fecha,103) FROM @HorarioAgentes)=CONVERT(VARCHAR(10),GETDATE(),103)/*Si el horario es para el mismo dia mostrara solo los horarios de la hora actual en adelante*/
+	BEGIN 
+		SELECT H.Agente,A.Nombre,H.Fecha,H.Hora FROM @HorarioAgentes as H
+		INNER JOIN Agente as A ON H.Agente=A.Agente
+		WHERE Hora>SUBSTRING(CONVERT(VARCHAR(23),DATEADD(HOUR, @HoraMargen ,GETDATE()),126),12,5) ORDER BY Hora
+	END
+	ELSE
+	BEGIN
+		SELECT H.Agente,A.Nombre,H.Fecha,H.Hora FROM @HorarioAgentes as H
+		INNER JOIN Agente as A ON H.Agente=A.Agente ORDER BY Hora
+	END
+END
+ELSE
+BEGIN
+	IF (SELECT TOP 1 CONVERT(VARCHAR(10),Fecha,103) FROM @HorarioAgentes)=CONVERT(VARCHAR(10),GETDATE(),103)
+	BEGIN 
+		INSERT INTO CA_apitoyhorarios
+		SELECT  H.*, A.PersonalNombres, A.PersonalApellidoPaterno, A.tipo, @Anio, @Mes, @Dia 
+		FROM @HorarioAgentes AS H 
+		INNER JOIN Agente AS A ON H.agente = A.agente  WHERE H.Hora>SUBSTRING(CONVERT(VARCHAR(23),DATEADD(HOUR, @HoraMargen ,GETDATE()),126),12,5)
+		ORDER BY H.Agente asc, H.Hora asc 
+	END
+	ELSE
+	BEGIN
+		INSERT INTO CA_apitoyhorarios
+		SELECT  H.*, A.PersonalNombres, A.PersonalApellidoPaterno, A.tipo, @Anio, @Mes, @Dia 
+		FROM @HorarioAgentes AS H 
+		INNER JOIN Agente AS A ON H.agente = A.agente 
+		ORDER BY H.Agente asc, H.Hora asc
+	END
+END
+--/*GTS|Fin|Funcion para obtener un horario de dia dependiendo de la la hora de la jornada y los minutos de recepcion*/
+END
+
+GO
+/*GTS|Ejemplo..*/
+ --EXEC xpCA_HorarioAgenteNombres 1,2021,5,28,'SePa'
+
+
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+/* =============================================
 -- Autor:Giovanni Trujillo Silvas
 -- Creación: 05/06/2020
 -- Ejemplo:  EXEC xpCA_HorarioAgente 3,2020,09,2,'SePa'
