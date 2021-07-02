@@ -202,7 +202,8 @@ GO
 /*GTS|Ejemplo..*/
  --EXEC xpCA_HorarioAgenteNombres 1,2021,5,28,'SePa'
 
-
+ /************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -238,17 +239,12 @@ DECLARE
 	SELECT @Recepcion = CCTRecepcion
 		FROM Sucursal 
 	   WHERE Sucursal = @Sucursal 
-	
-	IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.CA_sepa_conf_correo') and type = 'U')/*Revisamos si existe la tabla para poder sacar la Margenes de tiempo*/
-	BEGIN
-		IF EXISTS (SELECT * FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal)
-		BEGIN 
-			SELECT @HoraMargen = ISNULL(HoraMargenCita,0) FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
-		END	
-		ELSE 
-			SET @HoraMargen=0
-	END
-	ELSE
+
+	IF EXISTS (SELECT * FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal)
+	BEGIN 
+		SELECT @HoraMargen = ISNULL(HoraMargenCita,0) FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
+	END	
+	ELSE 
 		SET @HoraMargen=0
 
 	DECLARE @HorariosJornadas TABLE
@@ -259,16 +255,33 @@ DECLARE
 
 	IF ISNULL(@Recepcion,'') =''
 	BEGIN
-		SELECT 'No hay Horario Disponible'
-		RETURN
+		IF @Interfaz='SePaSlot'
+		BEGIN
+			SELECT '','',''
+			RETURN
+		END
+		ELSE
+		BEGIN
+			SELECT 'No hay Horario Disponible'
+			RETURN
+		END
 	END
 
 	SELECT @FechaConMargen=CONVERT(VARCHAR(23),DATEADD(HOUR, @HoraMargen ,GETDATE()),126)
 
+
 	IF @FechaConMargen >(CONVERT(datetime, @Anio+'-'+REPLACE(STR(@Mes,2),' ','0')+'-'+REPLACE(STR(@Dia,2),' ','0')+'T'+'19:00'+':00.000',126))/*El horario con margen es mayoy a la fecha de consulta*/
 	BEGIN	
-		SELECT 'No hay Horario Disponible1'
-		RETURN
+		IF @Interfaz='SePaSlot'
+		BEGIN
+			SELECT '','',''
+			RETURN
+		END
+		ELSE
+		BEGIN
+			SELECT 'No hay Horario Disponible1'
+			RETURN
+		END
 	END
 	ELSE
 	BEGIN
@@ -279,15 +292,28 @@ DECLARE
 		--END
 		--ELSE 
 		--BEGIN 
-			IF (SUBSTRING(CONVERT(VARCHAR(23),@FechaConMargen,126),12,5))>('19:00')
+			IF (SUBSTRING(CONVERT(VARCHAR(23),@FechaConMargen,126),12,5))>('19:00') AND CONVERT(VARCHAR(10),@FechaConMargen,103)= @Anio+'-'+REPLACE(STR(@Mes,2),' ','0')+'-'+REPLACE(STR(@Dia,2),' ','0')
 			BEGIN
-				SELECT @HoraComienzo='07:00'
+				IF @Interfaz='SePaSlot'
+				BEGIN
+					SELECT '','',''
+					RETURN
+				END
+				ELSE
+				BEGIN
+					SELECT 'No hay Horario Disponible2'
+					RETURN
+				END
 			END
 			ELSE IF (SUBSTRING(CONVERT(VARCHAR(23),@FechaConMargen,126),12,5))<('07:00')
 			BEGIN
 				SELECT @HoraComienzo='07:00'
 			END
-			ELSE
+			ELSE IF @FechaConMargen < (CONVERT(datetime, @Anio+'-'+REPLACE(STR(@Mes,2),' ','0')+'-'+REPLACE(STR(@Dia,2),' ','0')+'T'+'07:00'+':00.000',126))--(CONVERT(VARCHAR(10),@FechaConMargen,103))=(CONVERT(VARCHAR(10),GETDATE(),103))
+			BEGIN
+				SELECT @HoraComienzo='07:00'
+			END
+			ELSE 
 			BEGIN
 				SELECT @HoraComienzo=SUBSTRING(CONVERT(VARCHAR(23),@FechaConMargen,126),12,5)
 			END
@@ -370,7 +396,7 @@ DECLARE
 	END
 
 	---------------BUSCAMOS LOS ASESORES O TECNICOS CON UNA JORNADA ASIGNADA ------------------------------
-	IF @Interfaz='SePa'
+	IF @Interfaz IN ('SePa','SePaSlot')
 	BEGIN 
 		DECLARE HorarioJornada CURSOR FOR   
 		SELECT  DISTINCT Jornada FROM Agente  
@@ -441,7 +467,7 @@ DECLARE
 	)
 
 	--- EXTRAE LOS ASESORES JUNTO CON SUS JORNADAS Y HORARIOS DISPONIBLES 
-		IF @Interfaz='SePa'
+		IF @Interfaz IN ('SePa','SePaSlot')
 		BEGIN
 			DECLARE HorarioAgentes CURSOR FOR   
 			SELECT  A.Jornada,A.Agente,HJ.Hora FROM Agente  AS A
@@ -478,7 +504,7 @@ DECLARE
 	CLOSE HorarioAgentes  
 	DEALLOCATE HorarioAgentes  
 
-	IF @Interfaz='SePa'
+	IF @Interfaz IN ('SePa','SePaSlot')
 	BEGIN
 		SELECT * FROM @HorarioAgentes WHERE Hora>@HoraComienzo ORDER BY Hora
 	END
@@ -504,7 +530,8 @@ DECLARE
 --/*GTS|Fin|Funcion para obtener un horario de dia dependiendo de la la hora de la jornada y los minutos de recepcion*/
 END
 GO
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -606,7 +633,8 @@ DECLARE
 
 END
 GO
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -673,7 +701,8 @@ DECLARE
 END
 GO
 
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -844,7 +873,8 @@ END CATCH
 		
 END
 GO
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -914,7 +944,8 @@ DECLARE
 
 END
 GO
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -949,7 +980,8 @@ DECLARE
 END
 GO
 
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -1021,3 +1053,102 @@ DECLARE
 
 END
 GO
+
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+/* =============================================
+-- Autor:Giovanni Trujillo Silvas
+-- Creación: 27/06/2021
+-- Ejemplo:  EXEC xpCA_SlotsHorarios
+-- Parámetros 
+-- Descripción:Genera los horarios disponibles para los agentes en un rango de 60 dias
+*/
+CREATE PROCEDURE xpCA_SlotsHorarios
+AS
+BEGIN
+DECLARE
+@Dia INT =1,
+@Fecha DATE,
+@Day INT, 
+@Month INT, 
+@Year INT,
+@Hora VARCHAR(5),
+@Recepcion int,
+@Inicio			VARCHAR(5),
+@Fin			VARCHAR(5),
+@Sucursal INT
+
+TRUNCATE TABLE SlotHorarios
+
+CREATE TABLE #Horario (
+Agente VARCHAR(20),
+Fecha DATE,
+Hora VARCHAR(5)
+)
+
+DECLARE Horarios CURSOR FOR   
+SELECT Sucursal FROM Sucursal WHERE Sucursal=1
+OPEN Horarios  
+FETCH NEXT FROM Horarios INTO @Sucursal  
+WHILE @@FETCH_STATUS = 0  
+BEGIN  
+----------------------------------------------------------
+	SELECT @Recepcion = CCTRecepcion FROM Sucursal WHERE Sucursal = @Sucursal 
+
+	;WHILE  @Dia < 61
+	BEGIN
+		SELECT @Inicio='07:00',@Fin='19:00',@Hora = NULL
+		SELECT @Fecha = DATEADD(DAY, @Dia ,GETDATE())
+		SELECT @Day =DAY(@Fecha),@Month=MONTH(@Fecha),@Year=YEAR(@Fecha)
+		--SELECT @Day,@Month,@Year
+
+
+		DELETE FROM #Horario
+		INSERT INTO #Horario
+		EXEC xpCA_HorarioAgente @Sucursal,@Year,@Month,@Day,'SePaSlot'
+
+		WHILE ISNULL(@Hora,@Inicio) BETWEEN @Inicio AND @Fin--< @IFin  
+		BEGIN 
+			--SI LA HORA ES NULL QUIERE DECIR QUE ES EL PRIMER HORARIO Y SE LE ASIGNA EL INICIO DE CASO CONTRARIO SE LE INCREMENTA LOS MINITOS DE TIEMPO EN RECEPCION 
+			IF @Hora IS NULL
+				SELECT @Hora=@Inicio
+			ELSE
+				SELECT @Hora = CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108)
+		
+			IF @Hora < @Fin
+			BEGIN
+				INSERT INTO SlotHorarios
+				SELECT @Fecha,0,@Hora ,CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108),0
+			END
+
+			--UPDATE  SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM #Horario)
+		END
+		UPDATE #Horario SET Agente=''
+	
+		UPDATE SH SET SH.Disponible=1
+		FROM SlotHorarios AS SH 
+		INNER JOIN #Horario AS H ON H.Fecha=SH.fecha AND H.Hora=SH.Inicio
+	
+		SELECT @Dia = @Dia+1
+
+	END 
+	DROP TABLE #Horario
+----------------------------------------------------------
+FETCH NEXT FROM Horarios INTO @Sucursal  
+END  
+  
+CLOSE Horarios  
+DEALLOCATE Horarios  
+
+UPDATE  SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM SlotHorarios WHERE Disponible=1)
+
+END
+GO
+
+
+--EXEC xpCA_SlotsHorarios 
+--SELECT * FROM SlotHorarios where fecha='29/06/2021'

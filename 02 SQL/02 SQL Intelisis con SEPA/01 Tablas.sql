@@ -120,3 +120,18 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+
+/* =============================================
+-- Autor:Giovanni Trujillo 
+-- Creación: 27/06/2021
+-- Descripción: Tabla para Slot de Horarios a presentar
+-- =============================================*/
+CREATE TABLE SlotHorarios(
+Fecha DATE,
+DiaHabil BIT, 
+Inicio VARCHAR(5),
+Fin VARCHAR(5),
+Disponible BIT 
+);
+GO
