@@ -810,3 +810,99 @@ BEGIN
   Delete from ListaSt where Estacion = @Estacion    
 END    
 GO
+
+
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+/* =============================================
+-- Autor:Giovanni Trujillo Silvas
+-- Creación: 27/06/2021
+-- Ejemplo:  EXEC xpCA_SlotsHorarios
+-- Parámetros 
+-- Descripción:Genera los horarios disponibles para los agentes en un rango de 60 dias
+*/
+CREATE PROCEDURE xpCA_SlotsHorarios
+AS
+BEGIN
+DECLARE
+@Dia INT =1,
+@Fecha DATE,
+@Day INT, 
+@Month INT, 
+@Year INT,
+@Hora VARCHAR(5),
+@Recepcion int,
+@Inicio			VARCHAR(5),
+@Fin			VARCHAR(5),
+@Sucursal INT
+
+TRUNCATE TABLE SlotHorarios
+
+CREATE TABLE #Horario (
+Agente VARCHAR(20),
+Fecha DATE,
+Hora VARCHAR(5)
+)
+
+DECLARE Horarios CURSOR FOR   
+SELECT Sucursal FROM Sucursal WHERE Sucursal=1
+OPEN Horarios  
+FETCH NEXT FROM Horarios INTO @Sucursal  
+WHILE @@FETCH_STATUS = 0  
+BEGIN  
+----------------------------------------------------------
+	SELECT @Recepcion = CCTRecepcion FROM Sucursal WHERE Sucursal = @Sucursal 
+
+	;WHILE  @Dia < 61
+	BEGIN
+		SELECT @Inicio='07:00',@Fin='19:00',@Hora = NULL
+		SELECT @Fecha = DATEADD(DAY, @Dia ,GETDATE())
+		SELECT @Day =DAY(@Fecha),@Month=MONTH(@Fecha),@Year=YEAR(@Fecha)
+		--SELECT @Day,@Month,@Year
+
+
+		DELETE FROM #Horario
+		INSERT INTO #Horario
+		EXEC xpCA_HorarioAgente @Sucursal,@Year,@Month,@Day,'SePaSlot'
+
+		WHILE ISNULL(@Hora,@Inicio) BETWEEN @Inicio AND @Fin--< @IFin  
+		BEGIN 
+			--SI LA HORA ES NULL QUIERE DECIR QUE ES EL PRIMER HORARIO Y SE LE ASIGNA EL INICIO DE CASO CONTRARIO SE LE INCREMENTA LOS MINITOS DE TIEMPO EN RECEPCION 
+			IF @Hora IS NULL
+				SELECT @Hora=@Inicio
+			ELSE
+				SELECT @Hora = CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108)
+		
+			IF @Hora < @Fin
+			BEGIN
+				INSERT INTO SlotHorarios
+				SELECT @Fecha,0,@Hora ,CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108),0
+			END
+
+			--UPDATE  SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM #Horario)
+		END
+		UPDATE #Horario SET Agente=''
+	
+		UPDATE SH SET SH.Disponible=1
+		FROM SlotHorarios AS SH 
+		INNER JOIN #Horario AS H ON H.Fecha=SH.fecha AND H.Hora=SH.Inicio
+	
+		SELECT @Dia = @Dia+1
+
+	END 
+	DROP TABLE #Horario
+----------------------------------------------------------
+FETCH NEXT FROM Horarios INTO @Sucursal  
+END  
+  
+CLOSE Horarios  
+DEALLOCATE Horarios  
+
+UPDATE  SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM SlotHorarios WHERE Disponible=1)
+
+END
+GO

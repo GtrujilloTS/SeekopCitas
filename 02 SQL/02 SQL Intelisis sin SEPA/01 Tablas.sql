@@ -4,7 +4,6 @@
 -- Creación: 10/02/2021
 -- Descripción: Tabla para almacenamiento de datos Seekop en Venta 
 -- =============================================*/
-
 CREATE TABLE CA_Venta
 (
 ID INT NULL,
@@ -20,6 +19,7 @@ SKPlacas VARCHAR(20)NULL,
 SKVin VARCHAR(20)NULL
 );
 GO
+
 /* =============================================
 -- Autor:Giovanni Trujillo Silvas
 -- Creación: 10/02/2021
@@ -121,17 +121,18 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 GO
 
-
 /* =============================================
 -- Autor:Giovanni Trujillo 
 -- Creación: 27/06/2021
 -- Descripción: Tabla para Slot de Horarios a presentar
 -- =============================================*/
-CREATE TABLE SlotHorarios(
-Fecha DATE,
-DiaHabil BIT, 
-Inicio VARCHAR(5),
-Fin VARCHAR(5),
-Disponible BIT 
-);
+CREATE TABLE [dbo].[CA_SlotHorarios](
+	[Fecha] [date] NOT NULL,
+	[DiaHabil] [bit] NOT NULL,
+	[Inicio] [varchar](5) NOT NULL,
+	[Fin] [varchar](5) NOT NULL,
+	[Disponible] [bit] NOT NULL,
+	[Sucursal] [int] NOT NULL
+) ON [PRIMARY]
+
 GO

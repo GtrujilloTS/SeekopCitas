@@ -14,11 +14,13 @@ INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta],
 GO
 INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKUsuario', N'Sucursal', N'Nissan', N'SeekopCitas', N'Usuario de Intelisis que detona Citas', N'Este parametro contendra al usuario que ara el proceso de afectacion en Intelisis')
 GO
-INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKAgenteServicio', N'Sucursal', N'Nissan', N'SeekopCitas', N'Agente de Servicio configurado para citas', N'Agente de Servicio que se usa para Citas, este agente se guarda en el Campo AgenteServicio y se ve en la pestaña Informacion Adicional')
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKAgenteCitas', N'Sucursal', N'Nissan', N'SeekopCitas', N'Agente de Servicio configurado para citas', N'Agente de Servicio que se usa para Citas, este agente se guarda en el Campo AgenteServicio y se ve en la pestaña Informacion Adicional')
 GO
-INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKEndPointConcludeAppointments', N'Sucursal', N'Nissan', N'SeekopCitas', N'Endpoint de la Api usada para concluir citas', N'Endpoint de la Api usada para concluir citas')
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKEndPointConcludeAppointments', N'Empresa', N'Nissan', N'SeekopCitas', N'Endpoint de la Api usada para concluir citas', N'Endpoint de la Api usada para concluir citas')
 GO
 INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKClienteSeekop', N'Sucursal', N'Nissan', N'SeekopCitas', N'Cliente Generico para citas de Seekop', N'Todas las citas Seekop usaran el cliente que se configure para cada Sucursal')
+GO
+INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKAgenteDefaultSeekop', N'Sucursal', N'Nissan', N'SeekopCitas', N'Agente Principal de la Cita Default', N'Agente de Cita a usar de Manera Default, se pondra en la cita solo ne el caso que seekop no mande la informacion')
 GO
 ---el siguiente parametro aplica solo para Inlosa
 INSERT [dbo].[CA_CatParametros] ([Clave], [Tipo], [Marca], [Grupo], [DescCorta], [DescCompleta]) VALUES (N'SKAlmacenCitas', N'Sucursal', N'Nissan', N'SeekopCitas', N'Almacen a usar para creacion de Citas Seekop', N'Almacion especifico en el cual se estaran generando las citas de Servicio Provemientes de Seekop')

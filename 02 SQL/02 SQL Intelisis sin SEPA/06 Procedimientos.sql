@@ -33,12 +33,17 @@ SELECT @Recepcion = CCTRecepcion
     FROM Sucursal 
    WHERE Sucursal = @Sucursal 
 
-IF EXISTS (SELECT * FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal)
-BEGIN 
-	SELECT @HoraMargen = ISNULL(HoraMargenCita,0) FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
-END	
-ELSE 
-	SET @HoraMargen=0
+	IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.CA_sepa_conf_correo') and type = 'U')/*Revisamos si existe la tabla para poder sacar la Margenes de tiempo*/
+	BEGIN
+		IF EXISTS (SELECT * FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal)
+		BEGIN 
+			SELECT @HoraMargen = ISNULL(HoraMargenCita,0) FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
+		END	
+		ELSE 
+			SET @HoraMargen=0
+	END
+	ELSE
+		SET @HoraMargen=0
 
 DECLARE @HorariosJornadas TABLE
 (
@@ -322,11 +327,16 @@ DECLARE
 		FROM Sucursal 
 	   WHERE Sucursal = @Sucursal 
 
-	IF EXISTS (SELECT * FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal)
-	BEGIN 
-		SELECT @HoraMargen = ISNULL(HoraMargenCita,0) FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
-	END	
-	ELSE 
+	IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.CA_sepa_conf_correo') and type = 'U')/*Revisamos si existe la tabla para poder sacar la Margenes de tiempo*/
+	BEGIN
+		IF EXISTS (SELECT * FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal)
+		BEGIN 
+			SELECT @HoraMargen = ISNULL(HoraMargenCita,0) FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
+		END	
+		ELSE 
+			SET @HoraMargen=0
+	END
+	ELSE
 		SET @HoraMargen=0
 
 	DECLARE @HorariosJornadas TABLE
@@ -831,9 +841,9 @@ BEGIN TRY
 			--SET @ClienteSK='ITCTESK'
 		/*Se buscan los parametros configurados en la ventana de Interfaces por sucursal y extrae el valor configurado*/
 
-		SELECT @Usuario=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','Usuario')
-		SELECT @AgenteServicio=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','AgenteServicio')
-		SELECT @ClienteSK=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','ClienteSeekop')
+		SELECT @Usuario=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','SKUsuario')
+		SELECT @AgenteServicio=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','SKAgenteCitas')
+		SELECT @ClienteSK=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','SKClienteSeekop')
 
 		SELECT TOP 1 @SArt=ServicioArticulo,@SModelo=ServicioModelo,@SPlacas=ServicioPlacas,@SVin=ServicioSerie,@ArticuloPaquete=ISNULL(ArticuloPaquete,''),@Concepto=Concepto FROM CA_log_sepa_citas WHERE Cliente =@Cliente ORDER BY ID DESC
 		
@@ -1096,7 +1106,9 @@ DECLARE
 	IF EXISTS (SELECT * FROM CA_log_sepa_citas WHERE Id_CitaIntelisis=@ID AND Cliente LIKE 'SKS%'  )
 	BEGIN
 		SELECT @Sucursal=Sucursal FROM VENTA WHERE ID=@ID  AND Mov='Cita Servicio' 
-		SELECT @Url=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','EndPointConcludeAppointments')
+		SELECT @Url=dbo.fnCA_BusquedaClaveParametroInterfazEmpresa('SeekopCitas','SKEndPointConcludeAppointments')
+		---dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','EndPointConcludeAppointments')
+		
 	END
 
 	IF EXISTS (SELECT * FROM CA_log_sepa_citas  WHERE Id_CitaIntelisis=@ID AND  Estatus='CONFIRMAR')
@@ -1120,6 +1132,7 @@ GO
 
 /************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************/
+
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -1131,7 +1144,7 @@ GO
 -- Parámetros 
 -- Descripción:Genera los horarios disponibles para los agentes en un rango de 60 dias
 */
-CREATE PROCEDURE xpCA_SlotsHorarios
+CREATE PROCEDURE [dbo].[xpCA_SlotsHorarios]
 AS
 BEGIN
 DECLARE
@@ -1146,7 +1159,7 @@ DECLARE
 @Fin			VARCHAR(5),
 @Sucursal INT
 
-TRUNCATE TABLE SlotHorarios
+TRUNCATE TABLE CA_SlotHorarios
 
 CREATE TABLE #Horario (
 Agente VARCHAR(20),
@@ -1155,7 +1168,7 @@ Hora VARCHAR(5)
 )
 
 DECLARE Horarios CURSOR FOR   
-SELECT Sucursal FROM Sucursal WHERE Sucursal=1
+SELECT Sucursal FROM Sucursal WHERE Sucursal%2=1
 OPEN Horarios  
 FETCH NEXT FROM Horarios INTO @Sucursal  
 WHILE @@FETCH_STATUS = 0  
@@ -1185,8 +1198,8 @@ BEGIN
 		
 			IF @Hora < @Fin
 			BEGIN
-				INSERT INTO SlotHorarios
-				SELECT @Fecha,0,@Hora ,CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108),0
+				INSERT INTO CA_SlotHorarios
+				SELECT @Fecha,0,@Hora ,CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108),0,@Sucursal
 			END
 
 			--UPDATE  SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM #Horario)
@@ -1194,13 +1207,13 @@ BEGIN
 		UPDATE #Horario SET Agente=''
 	
 		UPDATE SH SET SH.Disponible=1
-		FROM SlotHorarios AS SH 
+		FROM CA_SlotHorarios AS SH 
 		INNER JOIN #Horario AS H ON H.Fecha=SH.fecha AND H.Hora=SH.Inicio
-	
+		WHERE SH.Sucursal=@Sucursal
 		SELECT @Dia = @Dia+1
 
 	END 
-	DROP TABLE #Horario
+	--DROP TABLE #Horario
 ----------------------------------------------------------
 FETCH NEXT FROM Horarios INTO @Sucursal  
 END  
@@ -1208,10 +1221,10 @@ END
 CLOSE Horarios  
 DEALLOCATE Horarios  
 
-UPDATE  SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM SlotHorarios WHERE Disponible=1)
+UPDATE  CA_SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM CA_SlotHorarios WHERE Disponible=1) 
 
 END
-GO
+
 
 
 --EXEC xpCA_SlotsHorarios 
