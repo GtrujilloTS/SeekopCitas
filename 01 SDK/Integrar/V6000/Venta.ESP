@@ -1,7 +1,8 @@
 [Venta.frm/Forma]
 [Venta.frm/Forma.ListaCarpetas]
-Nissan=SeekopCitas
+Kia=SeekopCitas
 SeekopCitas=(Fin)
+
 
 
 [Venta.frm/SeekopCitas]
@@ -32,6 +33,16 @@ CampoColorLetras=Negro
 CampoColorFondo=Blanco
 ListaEnCaptura=(Lista)
 CarpetaVisible=S
+
+[Venta.frm/SeekopCitas.CA_Venta.SKCte]
+Carpeta=SeekopCitas
+Clave=CA_Venta.SKCte
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=20
+ColorFondo=Blanco
 
 [Venta.frm/SeekopCitas.CA_Venta.SKNombreCompleto]
 Carpeta=SeekopCitas
@@ -124,7 +135,8 @@ Tamano=30
 ColorFondo=Blanco
 
 [Venta.frm/SeekopCitas.ListaEnCaptura]
-(Inicio)=CA_Venta.SKNombreCompleto
+(Inicio)=CA_Venta.SKCte
+CA_Venta.SKCte=CA_Venta.SKNombreCompleto
 CA_Venta.SKNombreCompleto=CA_Venta.SKNombres
 CA_Venta.SKNombres=CA_Venta.SKAPaterno
 CA_Venta.SKAPaterno=CA_Venta.SKAMaterno
@@ -134,3 +146,34 @@ CA_Venta.SKArtPaquete=CA_Venta.SKModelo
 CA_Venta.SKModelo=CA_Venta.SKPlacas
 CA_Venta.SKPlacas=CA_Venta.SKVin
 CA_Venta.SKVin=(Fin)
+
+[Venta.frm/Forma.ListaAcciones]
+EstatusDDO=SKProspectos
+SKProspectos=(Fin)
+
+[Venta.frm/Acciones.SKProspectos]
+Nombre=SKProspectos
+Boton=0
+Menu=&Otros
+NombreDesplegar=Prospectos Seekop
+EnMenu=S
+EspacioPrevio=S
+TipoAccion=Formas
+ClaveAccion=CA_SKClientes
+Activo=S
+Visible=S
+BarraBtnFondo=Plata
+BarraBtnFuente={MS Sans Serif, 8, Negro, []}
+BarraBtnTxtAlign=Izquierda
+BarraBtnTxtPos=Arriba
+BarraBtnSubtitFuente={MS Sans Serif, 8, Negro, []}
+BarraBtnDescripFuente={MS Sans Serif, 8, Negro, []}
+BarraBtnImgPos=Arriba
+BarraBtnImgAlign=Izquierda
+BarraBtnSubtituloAli=Izquierda
+BarraBtnDescripcionAli=Izquierda
+BarraBtnSubtituloPos=Arriba
+BarraBtnDescripcionPos=Arriba
+AccionSecTextoFuente={MS Sans Serif, 8, Negro, []}
+AccionSecColor=Plata
+AccionSecAli=Izquierda
