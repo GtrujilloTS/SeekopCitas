@@ -3,9 +3,6 @@
 /*INICIO:INTEGRACION A STORED xpDespuesAfectar*/
 /*Integrar en Modulo de VTAS*/
 
-IF @Mov='Cita Servicio'
-	BEGIN 
-		EXEC xpCA_ConcluirCitaSePa @ID
-		EXEC xpCA_ActualizacionEstatusMonitor @ID
-	END
+EXEC xpCA_DespuesAfectarAgendamientoCitasSeekop @Modulo,@ID,@Accion,@Base,@GenerarMov,@Usuario,@Ok OUTPUT,@OkRef OUTPUT
+
 /*FIN:INTEGRACION A STORED xpDespuesAfectar*
