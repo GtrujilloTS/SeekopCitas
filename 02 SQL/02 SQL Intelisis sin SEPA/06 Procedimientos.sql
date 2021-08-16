@@ -777,6 +777,7 @@ GO
 
 /************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************/
+
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -813,7 +814,7 @@ DECLARE
 @SVin			VARCHAR(20),
 @SDesArt		VARCHAR(100),
 @ArticuloPaquete VARCHAR(100),
-@Concepto		VARCHAR(20),
+@Concepto		VARCHAR(50),
 @IDLog			INT
 
 BEGIN TRY
@@ -832,32 +833,41 @@ BEGIN TRY
 	ELSE
 	SELECT  @HoraRecepcion= SUBSTRING(CONVERT(VARCHAR(23),GETDATE(),126),12,5)	
 	
-	SELECT @Usuario=UsuarioSePaCS,@AgenteServicio=AgenteServicio FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
-
+	IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.CA_sepa_conf_correo') and type = 'U')/*Revisamos si existe la tabla para poder sacar la Margenes de tiempo*/
+	BEGIN
+		SELECT @Usuario=UsuarioSePaCS,@AgenteServicio=AgenteServicio FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
+	END
 
 	IF @Cliente LIKE 'SKS%'---- CLIENTE QUE ES EXCLUSIVO PARA SEEKOP
 	BEGIN
 		
 			--SET @ClienteSK='ITCTESK'
 		/*Se buscan los parametros configurados en la ventana de Interfaces por sucursal y extrae el valor configurado*/
+		IF @Agente ='AgenteDef'
+		BEGIN
+			SELECT @Agente=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKAgenteDefaultSeekop')---Agregar funcion de recoleccion de parametro por interfaz
+		END
+		
+		SELECT @Usuario=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKUsuario')
+		SELECT @AgenteServicio=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKAgenteCitas')
+		SELECT @ClienteSK=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKClienteSeekop')
 
-		SELECT @Usuario=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','SKUsuario')
-		SELECT @AgenteServicio=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','SKAgenteCitas')
-		SELECT @ClienteSK=dbo.fnCA_BusquedaClaveParametroInterfaz(@Sucursal,'SeekopCitas','SKClienteSeekop')
-
-		SELECT TOP 1 @SArt=ServicioArticulo,@SModelo=ServicioModelo,@SPlacas=ServicioPlacas,@SVin=ServicioSerie,@ArticuloPaquete=ISNULL(ArticuloPaquete,''),@Concepto=Concepto FROM CA_log_sepa_citas WHERE Cliente =@Cliente ORDER BY ID DESC
+		SELECT TOP 1 @SArt=ServicioArticulo,@SModelo=ServicioModelo,@SPlacas=ServicioPlacas,@SVin=ServicioSerie,@ArticuloPaquete=ISNULL(ArticuloPaquete,''),@Concepto=Concepto FROM CA_log_sepa_citas WHERE Cliente =@Cliente AND ID=@ID ORDER BY ID DESC
 		
 		
 		SELECT TOP 1 @SDesArt=Descripcion FROM CA_SKModeloVehiculos WHERE Clave=@SArt
-
-
+		
+		IF @Concepto != (SELECT TOP 1 Concepto FROM Venta where Mov='cita Servicio' AND Concepto LIKE 'Publico%' order by ID  desc)
+		BEGIN 
+			SELECT TOP 1 @Concepto=Concepto FROM Venta where Mov='cita Servicio' AND Concepto LIKE 'Publico%' order by ID  desc	
+		END
 		/*CLIENTE EXCLUSIVO DE SEEKOP EN LA AGENCIA*/
 		
 		INSERT INTO Venta
 		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
 		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
 		--SELECT Empresa,Mov,CONVERT(VARCHAR(10),GETDATE(),126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,@HoraRecepcion,
-		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
+		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),@Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),@Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
 		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),'Creada desde Interfaz Seekop '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,@SDesArt,@AgenteServicio
 		FROM CA_log_sepa_citas
 		WHERE ID=@ID			
@@ -1224,8 +1234,56 @@ DEALLOCATE Horarios
 UPDATE  CA_SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM CA_SlotHorarios WHERE Disponible=1) 
 
 END
+GO
 
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+/* =============================================
+-- Autor:Giovanni Trujillo 
+-- Creación: 17/06/2020
+-- Descripción: Validaciones y acciones que se detonaran para seekop despues de afectaciones
+-- Parámetros: todos los parametros del DespuesAfectar
+-- =============================================*/
+CREATE PROCEDURE [dbo].[xpCA_DespuesAfectarAgendamientoCitasSeekop](
+@Modulo          char(5) ,      
+@ID              int     ,      
+@Accion          char(20),      
+@Base            char(20),      
+@GenerarMov      char(20),      
+@Usuario         char(10),         
+@Ok              int          OUTPUT,
+@OkRef           varchar(255) OUTPUT)
+AS 
+BEGIN
+DECLARE      
+@Origen VARCHAR(50),
+@OrigenId VARCHAR(50),
+@Movimiento  VARCHAR(50),
+@EstatusPedido VARCHAR(30),
+@Empresa VARCHAR(10),
+@Anticipos VARCHAR(1000),
+@Cliente VARCHAR(50),
+@Concepto VARCHAR(50)='',
+@ConceptoVenta VARCHAR(50),
+@Mov VARCHAR(50),
+@OrigenVenta VARCHAR(50),
+@OrigenIDVenta VARCHAR(50)
 
+	SELECT TOP 1 @Empresa=Empresa FROM Empresa
 
+	IF @Modulo='VTAS'
+	BEGIN
+		SELECT @Mov=Mov FROM Venta WHERE ID=@ID
+		
+		IF @Mov='Cita Servicio'
+		BEGIN 
+			--EXEC xpCA_ConcluirCitaSePa @ID
+			EXEC xpCA_ActualizacionEstatusMonitor @ID
+		END
+	END
+END
+GO
 --EXEC xpCA_SlotsHorarios 
 --SELECT * FROM SlotHorarios where fecha='29/06/2021'
