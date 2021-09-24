@@ -1,23 +1,48 @@
+--/*Vista Original 600*/
+--SET ANSI_NULLS OFF
+--GO
+--SET QUOTED_IDENTIFIER OFF
+--GO
+--CREATE VIEW [dbo].[vwCA_CCVistaAgentes]
+--AS
+--SELECT Ag.Agente, Ag.Nombre, Ag.Jornada, Ag.Tipo, 'EstadoAgente' = Ag.Estatus,
+--V.ID, V.Mov, V.MovID, V.Estatus, V.Situacion, V.FechaEmision, V.HoraRecepcion, V.FechaRequerida, V.HoraRequerida, V.FechaOriginal,
+--'dtRequeridaIni' = CASE WHEN V.Mov = 'Servicio' THEN ISNULL(V.FechaOriginal, CONVERT(datetime, CONVERT(varchar(10),V.FechaRequerida,103) + ' ' + CASE WHEN ISDATE(V.HoraRequerida) = 1 AND CHARINDEX(':',V.HoraRequerida) > 0 THEN V.HoraRequerida ELSE '00:00' END ) )
+--ELSE CONVERT(datetime, CONVERT(varchar(10), V.FechaEmision,103) + ' ' + CASE WHEN ISDATE(V.HoraRecepcion) = 1 AND CHARINDEX(':',V.HoraRecepcion) > 0 THEN V.HoraRecepcion ELSE '00:00' END )  END,
+--'dtRequeridaFin' = CASE WHEN V.Mov = 'Servicio' THEN DATEADD(MI,ISNULL(S.CCTEntrega,0), ISNULL(V.FechaOriginal, CONVERT(DATETIME, CONVERT(VARCHAR(10),V.FechaRequerida,103) + ' ' + CASE WHEN ISDATE(V.HoraRequerida) = 1 AND CHARINDEX(':',V.HoraRequerida) > 0 THEN V.HoraRequerida ELSE '00:00' END)) )
+--ELSE DATEADD(MI,ISNULL(S.CCTRecepcion,0), CONVERT(datetime, CONVERT(varchar(10), V.FechaEmision,103) + ' ' + CASE WHEN ISDATE(V.HoraRecepcion) = 1 AND CHARINDEX(':',V.HoraRecepcion) > 0 THEN V.HoraRecepcion ELSE '00:00' END) ) END,
+--S.CCTLavado,S.CCTEntrega, S.CCTRecepcion
+--FROM Venta V
+--LEFT OUTER JOIN Agente Ag ON Ag.Agente = V.Agente
+--LEFT OUTER JOIN Jornada J ON Ag.Jornada = J.Jornada
+--LEFT OUTER JOIN Sucursal S on S.Sucursal = V.Sucursal
+--WHERE ((V.Mov = 'Servicio' AND V.Estatus = 'PENDIENTE') OR (V.Mov = 'Cita Servicio' AND V.Estatus = 'CONFIRMAR'))
+--GO
+
 
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
-CREATE VIEW [dbo].[vwCA_CCVistaAgentes]
+ALTER VIEW [dbo].[vwCA_CCVistaAgentes]
 AS
 SELECT Ag.Agente, Ag.Nombre, Ag.Jornada, Ag.Tipo, 'EstadoAgente' = Ag.Estatus,
-V.ID, V.Mov, V.MovID, V.Estatus, V.Situacion, V.FechaEmision, V.HoraRecepcion, V.FechaRequerida, V.HoraRequerida, V.FechaOriginal,
-'dtRequeridaIni' = CASE WHEN V.Mov = 'Servicio' THEN ISNULL(V.FechaOriginal, CONVERT(datetime, CONVERT(varchar(10),V.FechaRequerida,103) + ' ' + CASE WHEN ISDATE(V.HoraRequerida) = 1 AND CHARINDEX(':',V.HoraRequerida) > 0 THEN V.HoraRequerida ELSE '00:00' END ) )
-ELSE CONVERT(datetime, CONVERT(varchar(10), V.FechaEmision,103) + ' ' + CASE WHEN ISDATE(V.HoraRecepcion) = 1 AND CHARINDEX(':',V.HoraRecepcion) > 0 THEN V.HoraRecepcion ELSE '00:00' END )  END,
-'dtRequeridaFin' = CASE WHEN V.Mov = 'Servicio' THEN DATEADD(MI,ISNULL(S.CCTEntrega,0), ISNULL(V.FechaOriginal, CONVERT(DATETIME, CONVERT(VARCHAR(10),V.FechaRequerida,103) + ' ' + CASE WHEN ISDATE(V.HoraRequerida) = 1 AND CHARINDEX(':',V.HoraRequerida) > 0 THEN V.HoraRequerida ELSE '00:00' END)) )
-ELSE DATEADD(MI,ISNULL(S.CCTRecepcion,0), CONVERT(datetime, CONVERT(varchar(10), V.FechaEmision,103) + ' ' + CASE WHEN ISDATE(V.HoraRecepcion) = 1 AND CHARINDEX(':',V.HoraRecepcion) > 0 THEN V.HoraRecepcion ELSE '00:00' END) ) END,
-S.CCTLavado,S.CCTEntrega, S.CCTRecepcion
+V.ID, V.Mov, V.MovID, V.Estatus, V.Situacion, V.FechaEmision, V.HoraRecepcion, V.FechaRequerida, V.HoraRequerida, V.FechaOriginal, 
+'dtRequeridaIni' = CASE WHEN V.Mov = 'Servicio' THEN ISNULL(V.FechaOriginal, CONVERT(datetime, CONVERT(varchar(10),V.FechaRequerida,126) + 'T' + CASE WHEN ISDATE(V.HoraRequerida) = 1 AND CHARINDEX(':',V.HoraRequerida) > 0 THEN V.HoraRequerida ELSE '00:00' END+':00.000',126)) 
+												ELSE CONVERT(datetime, CONVERT(varchar(10), V.FechaEmision,126) + 'T' + CASE WHEN ISDATE(V.HoraRecepcion) = 1 AND CHARINDEX(':',V.HoraRecepcion) > 0 THEN V.HoraRecepcion ELSE '00:00' END +':00.000',126)  END,
+'dtRequeridaFin' = CASE WHEN V.Mov = 'Servicio' THEN DATEADD(MI,ISNULL(S.CCTEntrega,0), ISNULL(V.FechaOriginal, CONVERT(DATETIME, CONVERT(VARCHAR(10),V.FechaRequerida,126) + 'T' + CASE WHEN ISDATE(V.HoraRequerida) = 1 AND CHARINDEX(':',V.HoraRequerida) > 0 THEN V.HoraRequerida ELSE '00:00' END+':00.000',126)) )
+												ELSE DATEADD(MI,ISNULL(S.CCTRecepcion,0), CONVERT(datetime, CONVERT(varchar(10), V.FechaEmision,126) + 'T' + CASE WHEN ISDATE(V.HoraRecepcion) = 1 AND CHARINDEX(':',V.HoraRecepcion) > 0 THEN V.HoraRecepcion ELSE '00:00' END+':00.000',126) ) END,       
+S.CCTLavado,S.CCTEntrega, S.CCTRecepcion 
 FROM Venta V
-LEFT OUTER JOIN Agente Ag ON Ag.Agente = V.Agente
+LEFT OUTER JOIN Agente Ag ON Ag.Agente = V.Agente 
 LEFT OUTER JOIN Jornada J ON Ag.Jornada = J.Jornada
-LEFT OUTER JOIN Sucursal S on S.Sucursal = V.Sucursal
+LEFT OUTER JOIN Sucursal S on S.Sucursal = V.Sucursal 
 WHERE ((V.Mov = 'Servicio' AND V.Estatus = 'PENDIENTE') OR (V.Mov = 'Cita Servicio' AND V.Estatus = 'CONFIRMAR'))
 GO
+
+
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 
 SET ANSI_NULLS OFF
 GO
@@ -43,7 +68,8 @@ WHERE V.Mov='Cita Servicio' AND V.Estatus='CONFIRMAR'
 --AND V.FechaEmision>=CONVERT(VARCHAR(10),GETDATE(),126)  + 'T' +'00:00:00.000'
 GO
 
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 
 SET ANSI_NULLS OFF
 GO
@@ -62,4 +88,5 @@ A.Tipo = 'Asesor' AND A.Estatus = 'Alta'
 
 GO
 
-
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/

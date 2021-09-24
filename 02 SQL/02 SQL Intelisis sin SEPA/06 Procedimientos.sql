@@ -606,6 +606,7 @@ END
 GO
 /************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************/
+
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -778,6 +779,9 @@ GO
 /************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************/
 
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_GenerarCitaSePa') AND TYPE = 'P')
+	drop procedure dbo.xpCA_GenerarCitaSePa;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -843,7 +847,7 @@ BEGIN TRY
 		
 			--SET @ClienteSK='ITCTESK'
 		/*Se buscan los parametros configurados en la ventana de Interfaces por sucursal y extrae el valor configurado*/
-		IF @Agente ='AgenteDef'
+		IF @Agente IN ('AgenteDef','')
 		BEGIN
 			SELECT @Agente=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKAgenteDefaultSeekop')---Agregar funcion de recoleccion de parametro por interfaz
 		END
@@ -867,7 +871,7 @@ BEGIN TRY
 		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
 		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
 		--SELECT Empresa,Mov,CONVERT(VARCHAR(10),GETDATE(),126),Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,Cliente,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,@HoraRecepcion,
-		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),@Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),@Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
+		SELECT Empresa,Mov,CONVERT(VARCHAR(10),FechaEmision,126),@Concepto,dbo.fnCA_GeneraUENValida('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),@Concepto),Moneda,TipoCambio,ISNULL(@Usuario,'SOPDESA'),Estatus,@ClienteSK,dbo.fnCA_GeneraAlmacenlValido('VTAS',Mov,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal)),@Agente,CONVERT(VARCHAR(10),FechaEmision,126),HoraRequerida,HoraRequerida,
 		Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,dbo.fnCA_GeneraSucursalValida('VTAS',Mov,Sucursal),'Creada desde Interfaz Seekop '+CHAR(10)+Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,@SDesArt,@AgenteServicio
 		FROM CA_log_sepa_citas
 		WHERE ID=@ID			
@@ -1142,7 +1146,9 @@ GO
 
 /************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************/
-
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_SlotsHorarios') AND TYPE = 'P')
+	drop procedure dbo.xpCA_SlotsHorarios;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -1184,6 +1190,7 @@ FETCH NEXT FROM Horarios INTO @Sucursal
 WHILE @@FETCH_STATUS = 0  
 BEGIN  
 ----------------------------------------------------------
+	SET @Dia=1
 	SELECT @Recepcion = CCTRecepcion FROM Sucursal WHERE Sucursal = @Sucursal 
 
 	;WHILE  @Dia < 61
@@ -1194,7 +1201,7 @@ BEGIN
 		--SELECT @Day,@Month,@Year
 
 
-		DELETE FROM #Horario
+		DELETE FROM #Horario 
 		INSERT INTO #Horario
 		EXEC xpCA_HorarioAgente @Sucursal,@Year,@Month,@Day,'SePaSlot'
 
@@ -1235,6 +1242,8 @@ UPDATE  CA_SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FR
 
 END
 GO
+/************************************************************************************************************************************************************************************
+************************************************************************************************************************************************************************************/
 
 SET ANSI_NULLS OFF
 GO
