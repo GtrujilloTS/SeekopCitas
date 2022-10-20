@@ -5,8 +5,8 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
- Creación: 05/06/2020
- Descripción:Genera los horarios disponibles para los agentes por un dia espeficifico
+ Creaciï¿½n: 05/06/2020
+ Descripciï¿½n:Genera los horarios disponibles para los agentes por un dia espeficifico
 */
 CREATE PROCEDURE [dbo].[xpCA_HorarioAgenteNombres](@Sucursal int,@Anio VARCHAR(4),@Mes VARCHAR(2),@Dia VARCHAR(2), @Interfaz VARCHAR(20))
 AS
@@ -297,10 +297,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo Silvas
--- Creación: 05/06/2020
+-- Creaciï¿½n: 05/06/2020
 -- Ejemplo:  EXEC xpCA_HorarioAgente 3,2020,09,2,'SePa'
--- Parámetros SucursalTaller, Año, Mes, Dia, Interfaz
--- Descripción:Genera los horarios disponibles para los agentes por un dia espeficifico
+-- Parï¿½metros SucursalTaller, Aï¿½o, Mes, Dia, Interfaz
+-- Descripciï¿½n:Genera los horarios disponibles para los agentes por un dia espeficifico
 */
 CREATE PROCEDURE [dbo].[xpCA_HorarioAgente](@Sucursal int,@Anio VARCHAR(4),@Mes VARCHAR(2),@Dia VARCHAR(2), @Interfaz VARCHAR(20))
 AS
@@ -354,7 +354,7 @@ DECLARE
 		END
 		ELSE
 		BEGIN
-			SELECT 'No hay Horario Disponible'
+			SELECT 'Sin Horario', '', ''
 			RETURN
 		END
 	END
@@ -371,7 +371,7 @@ DECLARE
 		END
 		ELSE
 		BEGIN
-			SELECT 'No hay Horario Disponible1'
+			SELECT 'Sin Horario', '', ''
 			RETURN
 		END
 	END
@@ -393,7 +393,7 @@ DECLARE
 				END
 				ELSE
 				BEGIN
-					SELECT 'No hay Horario Disponible2'
+					SELECT 'Sin Horario', '', ''
 					RETURN
 				END
 			END
@@ -428,11 +428,19 @@ DECLARE
 
 
 	INSERT INTO #HorariosDisponibles
-	SELECT Agente,Jornada,FechaEmision,HoraRecepcion, FechaRequerida, HoraRequerida,dtRequeridaIni,dtRequeridaFin
+	SELECT Agente,Jornada,FechaEmision,ISNULL(HoraRecepcion,HoraRequerida) as HoraRecepcion, FechaRequerida, HoraRequerida,dtRequeridaIni,dtRequeridaFin
 	FROM vwCA_CCVistaAgentes WHERE 
 	YEAR(FechaRequerida) =@Anio  AND MONTH(FechaRequerida) = @Mes AND DAY(FechaRequerida)=@Dia
+       AND Jornada IS NOT NULL --AND HoraRecepcion  IS NOT NULL AND LEN(ISNULL(HoraRequerida,''))>4
 
-	
+        INSERT INTO #HorariosDisponibles
+	SELECT L.Agente,A.Jornada,L.FechaEmision,L.HoraRequerida,L.FechaEmision,L.HoraRequerida,
+	CONVERT(datetime, CONVERT(varchar(10), L.FechaEmision,126) + 'T' + CASE WHEN ISDATE(L.HoraRequerida) = 1 AND CHARINDEX(':',L.HoraRequerida) > 0 THEN L.HoraRequerida ELSE '00:00' END +':00.000',126),
+	DATEADD(MI,15,CONVERT(datetime, CONVERT(varchar(10), L.FechaEmision,126) + 'T' + CASE WHEN ISDATE(L.HoraRequerida) = 1 AND CHARINDEX(':',L.HoraRequerida) > 0 THEN L.HoraRequerida ELSE '00:00' END +':00.000',126))
+	FROM CA_log_sepa_citas L
+	INNER JOIN AGENTE A ON A.Agente = L.Agente
+	WHERE YEAR(L.FechaEmision) =@Anio  AND MONTH(L.FechaEmision) = @Mes AND DAY(L.FechaEmision)=@Dia
+
 	IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.CA_Asesores') and type = 'U')/*Revisamos si existe la tabla para poder sacar la prospoeccion*/
 	BEGIN
 		INSERT INTO #HorariosDisponibles
@@ -490,10 +498,23 @@ DECLARE
 	---------------BUSCAMOS LOS ASESORES O TECNICOS CON UNA JORNADA ASIGNADA ------------------------------
 	IF @Interfaz IN ('SePa','SePaSlot')
 	BEGIN 
-		DECLARE HorarioJornada CURSOR FOR   
-		SELECT  DISTINCT Jornada FROM Agente  
-		WHERE Tipo IN ('Asesor')  AND Estatus = 'Alta'  AND ISNULL(Jornada,'') !=''
-		AND NULLIF(Jornada,'') IS NOT NULL AND SucursalEmpresa =@Sucursal
+		IF EXISTS(SELECT * FROM CA_HorarioAgenteRecepcion AS H INNER JOIN AGENTE A ON H.Agente = A.Agente WHERE A.SucursalEmpresa =@Sucursal)
+		BEGIN
+		DECLARE HorarioJornada CURSOR FOR
+			SELECT DISTINCT A.Jornada FROM Agente AS A
+			INNER JOIN CA_HorarioAgenteRecepcion AS H ON A.Agente = H.Agente+''
+			WHERE A.Tipo IN ('Asesor')  AND A.Estatus = 'Alta'  AND ISNULL(A.Jornada,'') !=''
+			AND NULLIF(A.Jornada,'') IS NOT NULL AND A.SucursalEmpresa =@Sucursal
+			AND (SELECT SucursalEmpresa FROM AGENTE WHERE AGENTE = H.Agente)=@Sucursal
+		END
+	ELSE
+		BEGIN
+			DECLARE HorarioJornada CURSOR FOR
+			SELECT DISTINCT A.Jornada FROM Agente AS A
+			WHERE A.Tipo IN ('Asesor')  AND A.Estatus = 'Alta'  AND ISNULL(A.Jornada,'') !=''
+			AND NULLIF(A.Jornada,'') IS NOT NULL
+			AND A.SucursalEmpresa =@Sucursal
+		END
 	END ELSE
 	BEGIN 
 		DECLARE HorarioJornada CURSOR FOR   
@@ -561,12 +582,26 @@ DECLARE
 	--- EXTRAE LOS ASESORES JUNTO CON SUS JORNADAS Y HORARIOS DISPONIBLES 
 		IF @Interfaz IN ('SePa','SePaSlot')
 		BEGIN
-			DECLARE HorarioAgentes CURSOR FOR   
+			IF EXISTS(SELECT * FROM CA_HorarioAgenteRecepcion AS H INNER JOIN AGENTE A ON H.Agente = A.Agente WHERE A.SucursalEmpresa =@Sucursal)
+			BEGIN
+				DECLARE HorarioAgentes CURSOR FOR
+				SELECT  A.Jornada,A.Agente,HJ.Hora FROM Agente  AS A
+				INNER JOIN @HorariosJornadas AS HJ ON A.Jornada=HJ.Jornada
+				INNER JOIN CA_HorarioAgenteRecepcion AS H ON A.Agente = H.Agente
+				WHERE A.Tipo IN ('Asesor') AND A.Estatus = 'Alta'
+				--AND Familia = 'Recepcion'
+				AND NULLIF(A.Jornada,'') IS NOT NULL AND A.SucursalEmpresa =@Sucursal
+				AND (SELECT SucursalEmpresa FROM AGENTE WHERE AGENTE = H.Agente)=@Sucursal
+			END
+		ELSE
+			BEGIN
+			DECLARE HorarioAgentes CURSOR FOR
 			SELECT  A.Jornada,A.Agente,HJ.Hora FROM Agente  AS A
 			INNER JOIN @HorariosJornadas AS HJ ON A.Jornada=HJ.Jornada
 			WHERE A.Tipo IN ('Asesor') AND A.Estatus = 'Alta' 
 			--AND Familia = 'Recepcion'
 			AND NULLIF(A.Jornada,'') IS NOT NULL AND A.SucursalEmpresa =@Sucursal;
+		END
 		END
 		ELSE
 		BEGIN
@@ -598,8 +633,34 @@ DECLARE
 
 	IF @Interfaz IN ('SePa','SePaSlot')
 	BEGIN
+	IF EXISTS(SELECT * FROM CA_HorarioAgenteRecepcion AS H INNER JOIN AGENTE A ON H.Agente = A.Agente WHERE A.SucursalEmpresa =@Sucursal)
+		BEGIN
+			IF EXISTS(SELECT * FROM @HorarioAgentes)
+			BEGIN
+				SELECT H.Agente,H.Fecha,H.Hora FROM @HorarioAgentes AS H
+				INNER JOIN CA_HorarioAgenteRecepcion AS HO ON H.Agente = HO.Agente
+				WHERE Hora>@HoraComienzo AND HO.HoraFin > Hora
+				ORDER BY Hora
+			END
+			ELSE
+			BEGIN
+				SELECT 'Sin Horario', '', ''
+				RETURN
+			END
+		END
+	ELSE
+	BEGIN
+		IF EXISTS(SELECT * FROM @HorarioAgentes)
+		BEGIN
 		SELECT * FROM @HorarioAgentes WHERE Hora>@HoraComienzo ORDER BY Hora
 	END
+		ELSE
+		BEGIN
+			SELECT 'Sin Horario', '', ''
+			RETURN
+		END
+	END
+END
 
 --/*GTS|Fin|Funcion para obtener un horario de dia dependiendo de la la hora de la jornada y los minutos de recepcion*/
 END
@@ -613,10 +674,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
- Creación: 24/01/2021
- Descripción: Registro de un Nuevo Cliente en Intelisis
+ Creaciï¿½n: 24/01/2021
+ Descripciï¿½n: Registro de un Nuevo Cliente en Intelisis
  Ejemplo: EXEC xpCA_GeneraClienteSC 'Nombres','Apellido Paterno','Apellido Materno','','',''
- Parámetros: Nombre, Apaterno,Amaterno,CP,Email,Telefono
+ Parï¿½metros: Nombre, Apaterno,Amaterno,CP,Email,Telefono
  Resultado: ID de Cliente en Intelisis
  =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_GeneraClienteSC] (@Nomre VARCHAR(50),@APaterno VARCHAR(50),@AMaterno VARCHAR(50),@CP VARCHAR(10)=NULL,@Email VARCHAR(100)=NULL,@Tel VARCHAR(15)=NULL)
@@ -640,11 +701,11 @@ DECLARE
 	
 	IF ISNULL(@Email,'') != '' 
 	BEGIN 
-		SET @Contacto = 'Correo Electrónico'
+		SET @Contacto = 'Correo Electrï¿½nico'
 	END
 	IF ISNULL(@Tel,'') != ''
 	BEGIN 
-		SET @Contacto = 'Teléfono Móvil'
+		SET @Contacto = 'Telï¿½fono Mï¿½vil'
 	END
 	IF ISNULL(@Email,'') = '' AND ISNULL(@Tel,'') = ''
 	BEGIN 
@@ -716,10 +777,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
- Creación: 27/01/2021
- Descripción: Busqueda de clientes existentes en Intelisis
- Ejemplo: EXEC xpCA_BuquedaClinteSK 'Nombre','Apellido1','Apellido2' ó EXEC xpCA_BuquedaClinteSK 'Nombre Apellido1 Apellido2'
- Parámetros: Nombre, Apaterno,Amaterno
+ Creaciï¿½n: 27/01/2021
+ Descripciï¿½n: Busqueda de clientes existentes en Intelisis
+ Ejemplo: EXEC xpCA_BuquedaClinteSK 'Nombre','Apellido1','Apellido2' ï¿½ EXEC xpCA_BuquedaClinteSK 'Nombre Apellido1 Apellido2'
+ Parï¿½metros: Nombre, Apaterno,Amaterno
  Resultado: ID de Cliente en Intelisis y Nombre del Cliente
  =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_BuquedaClinteSK] (
@@ -788,9 +849,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo 
--- Creación: 17/06/2020
--- Descripción: Creacionde Cita Servicio provemiente de Sepa
--- Parámetros: Id del registro en el log de citas a generar
+-- Creaciï¿½n: 17/06/2020
+-- Descripciï¿½n: Creacionde Cita Servicio provemiente de Sepa
+-- Parï¿½metros: Id del registro en el log de citas a generar
 -- Resultado: El folio del movimiento o una respuesta del por que no se genero
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_GenerarCitaSePa] (@ID int)
@@ -969,10 +1030,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo 
--- Creación: 12/02/2021
+-- Creaciï¿½n: 12/02/2021
 -- Ejemplo: EXC xpCA_CancelarCitaSePa 1 C2012
--- Descripción: Cancelacion de Citas 
--- Parámetros: Id del registro en el log de citas y folio de la Cita
+-- Descripciï¿½n: Cancelacion de Citas 
+-- Parï¿½metros: Id del registro en el log de citas y folio de la Cita
 -- Resultado: Estatus de cancelacion Exitosa.
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_CancelarCitaSePa] (@ID INT,@Folio VARCHAR(20) )
@@ -1040,10 +1101,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo Silvas
--- Creación: 12/02/2021
+-- Creaciï¿½n: 12/02/2021
 -- Ejemplo: EXC xpCA_ActualizacionEstatusMonitor 682293
--- Descripción: Actualizacion de CA_LogMovimientosInterfaz Actualiza los estatus en el monitor
--- Parámetros: Id del registro en el log de citas y folio de la Cita
+-- Descripciï¿½n: Actualizacion de CA_LogMovimientosInterfaz Actualiza los estatus en el monitor
+-- Parï¿½metros: Id del registro en el log de citas y folio de la Cita
 -- Resultado: Estatus de cancelacion Exitosa.
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_ActualizacionEstatusMonitor]( @ID INT)
@@ -1076,8 +1137,8 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
- Creación: 25/05/2020
- Descripción:Cambio de estatus para citas en la API SePa
+ Creaciï¿½n: 25/05/2020
+ Descripciï¿½n:Cambio de estatus para citas en la API SePa
 */
 CREATE PROCEDURE [dbo].[xpCA_ConcluirCitaSePa](@ID	INT)
 AS
@@ -1155,10 +1216,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo Silvas
--- Creación: 27/06/2021
+-- Creaciï¿½n: 27/06/2021
 -- Ejemplo:  EXEC xpCA_SlotsHorarios
--- Parámetros 
--- Descripción:Genera los horarios disponibles para los agentes en un rango de 60 dias
+-- Parï¿½metros 
+-- Descripciï¿½n:Genera los horarios disponibles para los agentes en un rango de 60 dias
 */
 CREATE PROCEDURE [dbo].[xpCA_SlotsHorarios]
 AS
@@ -1251,9 +1312,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo 
--- Creación: 17/06/2020
--- Descripción: Validaciones y acciones que se detonaran para seekop despues de afectaciones
--- Parámetros: todos los parametros del DespuesAfectar
+-- Creaciï¿½n: 17/06/2020
+-- Descripciï¿½n: Validaciones y acciones que se detonaran para seekop despues de afectaciones
+-- Parï¿½metros: todos los parametros del DespuesAfectar
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_DespuesAfectarAgendamientoCitasSeekop](
 @Modulo          char(5) ,      
