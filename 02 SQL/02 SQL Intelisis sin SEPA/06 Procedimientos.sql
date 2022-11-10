@@ -665,8 +665,6 @@ END
 --/*GTS|Fin|Funcion para obtener un horario de dia dependiendo de la la hora de la jornada y los minutos de recepcion*/
 END
 GO
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
 /***************************************************************/
 /********************xpCA_GeneraClienteSC***********************/
 /***************************************************************/
@@ -896,9 +894,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo 
--- Creaci�n: 17/06/2020
--- Descripci�n: Creacionde Cita Servicio provemiente de Sepa
--- Par�metros: Id del registro en el log de citas a generar
+-- Creación: 17/06/2020
+-- Descripción: Creacionde Cita Servicio provemiente de Sepa
+-- Parámetros: Id del registro en el log de citas a generar
 -- Resultado: El folio del movimiento o una respuesta del por que no se genero
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_GenerarCitaSePa] (@ID int)
@@ -1055,7 +1053,7 @@ BEGIN TRY
 				ISNULL(Horas,1),Articulo,Impuesto1,Descripcion1,ISNULL(Horas,1),ISNULL(Horas,1) 
 				FROM ART WHERE ARTICULO=@ArticuloPaquete
 			END
-		END 
+		END
 	END
 
 	--SET @OkRef=  CONVERT(VARCHAR(10),@GenerarID)--GTS CAMBIO PARA MANDAR EL ID DE LA INSERCION DE VENTA Y NO EL FOLIO GENERADO
