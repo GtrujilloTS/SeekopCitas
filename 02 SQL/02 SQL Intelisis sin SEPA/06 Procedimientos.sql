@@ -667,17 +667,23 @@ END
 GO
 /************************************************************************************************************************************************************************************
 ************************************************************************************************************************************************************************************/
+/***************************************************************/
+/********************xpCA_GeneraClienteSC***********************/
+/***************************************************************/
 
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_GeneraClienteSC') AND TYPE = 'P')
+DROP PROCEDURE dbo.xpCA_GeneraClienteSC;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
- Creaci�n: 24/01/2021
- Descripci�n: Registro de un Nuevo Cliente en Intelisis
+ Creación: 24/01/2021
+ Descripción: Registro de un Nuevo Cliente en Intelisis
  Ejemplo: EXEC xpCA_GeneraClienteSC 'Nombres','Apellido Paterno','Apellido Materno','','',''
- Par�metros: Nombre, Apaterno,Amaterno,CP,Email,Telefono
+ Parámetros: Nombre, Apaterno,Amaterno,CP,Email,Telefono
  Resultado: ID de Cliente en Intelisis
  =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_GeneraClienteSC] (@Nomre VARCHAR(50),@APaterno VARCHAR(50),@AMaterno VARCHAR(50),@CP VARCHAR(10)=NULL,@Email VARCHAR(100)=NULL,@Tel VARCHAR(15)=NULL)
@@ -685,7 +691,7 @@ AS
 BEGIN
 SET NOCOUNT ON
 DECLARE 
-@Consecutivo VARCHAR(10),	
+@Consecutivo VARCHAR(10), 
 @Delegacion VARCHAR(100), 
 @Colonia VARCHAR(100),
 @Poblacion VARCHAR(100),
@@ -693,94 +699,134 @@ DECLARE
 @Pais VARCHAR(100),
 @Contacto VARCHAR(15),
 @OkRef VARCHAR(255),
-@Empresa VARCHAR(10)
-	
-	SELECT TOP 1 @Empresa = Empresa FROM Empresa
+@Empresa VARCHAR(10),
+@Contador INT,
+@Nombres VARCHAR(100),
+@Apellido1 VARCHAR(100),
+@Apellido2 VARCHAR(100)
+ 
+ SELECT TOP 1 @Empresa = Empresa FROM Empresa
+ 
+ --Implementar busqueda
+ IF (@Nomre IS NOT NULL AND @APaterno IS NOT NULL )
+  SELECT @Nombres=@Nomre, @Apellido1=@APaterno, @Apellido2=ISNULL(@AMaterno,'')
+ 
+ CREATE table #Target(
+	Cliente VARCHAR(100),
+	Nombre VARCHAR(1000)
+ );
+ INSERT INTO #Target 
+ 
+ SELECT Cliente,Nombre FROM CA_SKClientes WHERE PersonalNombres=@Nombres AND PersonalApellidoPaterno=@Apellido1 AND  PersonalApellidoMaterno LIKE @Apellido2+'%'
+ UNION
+ SELECT Cliente,Nombre FROM CA_SKClientes WHERE Nombre = @Nombres+' '+@Apellido1+' '+@Apellido2
+ UNION
+ SELECT Cliente,Nombre FROM CA_SKClientes WHERE Nombre LIKE @Nombres+' '+@Apellido1+' '+@Apellido2+'%'
+ UNION
+ SELECT Cliente,Nombre FROM CA_SKClientes WHERE Nombre LIKE @Nombres+' '+@Apellido1+'% '+@Apellido2+'%'
+ UNION
+ SELECT Cliente,Nombre FROM CA_SKClientes WHERE Nombre = @Apellido1+' '+@Apellido2+' '+@Nombres
+ UNION
+ SELECT Cliente,Nombre FROM CA_SKClientes WHERE Nombre LIKE @Apellido1+'% '+@Apellido2+'% '+@Nombres
+ 
+ SELECT @Contador=count(*) from #Target
+ if @Contador >0
+	begin
+	SELECT TOP 10 * FROM #Target
+	end
+ else
+	begin
+ SELECT @Delegacion=SATMunicipioDescripcion,@Colonia=SATColoniaDescripcion,@Poblacion=SATLocalidadDescripcion,@Estado=SATEstadoDescripcion,@Pais=SATPaisDescripcion FROM SATDireccionFiscal WHERE ClaveCP=@CP
+ 
+ IF ISNULL(@Email,'') != '' 
+ BEGIN 
+  SET @Contacto = 'Correo Electrónico'
+ END
+ IF ISNULL(@Tel,'') != ''
+ BEGIN 
+  SET @Contacto = 'Teléfono Móvil'
+ END
+ IF ISNULL(@Email,'') = '' AND ISNULL(@Tel,'') = ''
+ BEGIN 
+  SET @Contacto = 'No Contactar'
+ END
+ IF ISNULL(@Email,'') = ''
+ BEGIN 
+  SET @Email = 'notienecorreo@hotmail.com'
+ END
+ IF ISNULL(@Tel,'') = ''
+ BEGIN 
+  SET @Tel = '5555555555'
+ END
+ IF ISNULL(@CP,'') = ''
+ BEGIN 
+  SET @CP = '00000'
+ END
+ IF ISNULL(@Delegacion,'') = ''
+ BEGIN 
+  SET @Delegacion = 'DESCONOCIDO'
+ END
+ IF ISNULL(@Colonia,'') = ''
+ BEGIN 
+  SET @Colonia = 'DESCONOCIDO'
+ END
+ IF ISNULL(@Poblacion,'') = ''
+ BEGIN 
+  SET @Poblacion=@Delegacion
+ END
+ IF ISNULL(@Estado,'') = ''
+ BEGIN 
+  SET @Estado = 'DESCONOCIDO'
+ END
+ IF ISNULL(@Pais,'') = ''
+ BEGIN 
+  SET @Pais = 'DESCONOCIDO'
+ END
 
-	SELECT @Delegacion=SATMunicipioDescripcion,@Colonia=SATColoniaDescripcion,@Poblacion=SATLocalidadDescripcion,@Estado=SATEstadoDescripcion,@Pais=SATPaisDescripcion FROM SATDireccionFiscal WHERE ClaveCP=@CP
-	
-	IF ISNULL(@Email,'') != '' 
-	BEGIN 
-		SET @Contacto = 'Correo Electr�nico'
-	END
-	IF ISNULL(@Tel,'') != ''
-	BEGIN 
-		SET @Contacto = 'Tel�fono M�vil'
-	END
-	IF ISNULL(@Email,'') = '' AND ISNULL(@Tel,'') = ''
-	BEGIN 
-		SET @Contacto = 'No Contactar'
-	END
-	IF ISNULL(@Email,'') = ''
-	BEGIN 
-		SET @Email = 'notienecorreo@hotmail.com'
-	END
-	IF ISNULL(@Tel,'') = ''
-	BEGIN 
-		SET @Tel = '5555555555'
-	END
-	IF ISNULL(@CP,'') = ''
-	BEGIN 
-		SET @CP = '00000'
-	END
-	IF ISNULL(@Delegacion,'') = ''
-	BEGIN 
-		SET @Delegacion = 'DESCONOCIDO'
-	END
-	IF ISNULL(@Colonia,'') = ''
-	BEGIN 
-		SET @Colonia = 'DESCONOCIDO'
-	END
-	IF ISNULL(@Poblacion,'') = ''
-	BEGIN 
-		SET @Poblacion=@Delegacion
-	END
-	IF ISNULL(@Estado,'') = ''
-	BEGIN 
-		SET @Estado = 'DESCONOCIDO'
-	END
-	IF ISNULL(@Pais,'') = ''
-	BEGIN 
-		SET @Pais = 'DESCONOCIDO'
-	END
+ EXEC spConsecutivo 'CitasSK', 0, @Consecutivo OUTPUT 
 
-	EXEC spConsecutivo 'CitasSK', 0, @Consecutivo OUTPUT 
+ BEGIN TRY  
+  BEGIN TRANSACTION
 
-	BEGIN TRY  
-		BEGIN TRANSACTION
+   INSERT INTO CA_SKClientes (Cliente,Estatus,Nombre,PersonalNombres,PersonalApellidoPaterno,PersonalApellidoMaterno,Delegacion,Colonia,Poblacion,CodigoPostal,Estado,Pais,Direccion,DireccionNumero,RFC,FiscalRegimen,TelefonosLada,Telefonos,PersonalTelefonoMovil,eMail1,Contactar,ContactarDe,ContactarA,Sexo) 
+   VALUES(@Consecutivo,'ALTA',UPPER(@Nomre+' '+@APaterno+' '+@AMaterno),UPPER(@Nomre),UPPER(@APaterno),UPPER(@AMaterno),@Delegacion,@Colonia,@Poblacion,@CP,@Estado,@Pais,'Conocido','#','XAXX010101000','Persona Fisica',SUBSTRING(@Tel,1,3),SUBSTRING(@Tel,4,10),SUBSTRING(@Tel,1,10),@Email,@Contacto,'09:00','19:00','Masculino')
 
-			INSERT INTO CA_SKClientes (Cliente,Estatus,Nombre,PersonalNombres,PersonalApellidoPaterno,PersonalApellidoMaterno,Delegacion,Colonia,Poblacion,CodigoPostal,Estado,Pais,Direccion,DireccionNumero,RFC,FiscalRegimen,TelefonosLada,Telefonos,PersonalTelefonoMovil,eMail1,Contactar,ContactarDe,ContactarA,Sexo) 
-			VALUES(@Consecutivo,'ALTA',UPPER(@Nomre+' '+@APaterno+' '+@AMaterno),UPPER(@Nomre),UPPER(@APaterno),UPPER(@AMaterno),@Delegacion,@Colonia,@Poblacion,@CP,@Estado,@Pais,'Conocido','#','XAXX010101000','Persona Fisica',SUBSTRING(@Tel,1,3),SUBSTRING(@Tel,4,10),SUBSTRING(@Tel,1,10),@Email,@Contacto,'09:00','19:00','Masculino')
+  COMMIT TRANSACTION
+ END TRY  
+ BEGIN CATCH  
+  SELECT @OkRef=ERROR_MESSAGE()
+  ROLLBACK TRANSACTION
+ END CATCH;
+ 
 
-		COMMIT TRANSACTION
-	END TRY  
-	BEGIN CATCH  
-		SELECT @OkRef=ERROR_MESSAGE()
-		ROLLBACK TRANSACTION
-	END CATCH;
-	
+ IF @OkRef IS NULL
+ BEGIN
+  SELECT @OkRef=@Consecutivo
+ END
 
-	IF @OkRef IS NULL
-	BEGIN
-		SELECT @OkRef=@Consecutivo
-	END
-
-	SELECT @OkRef AS Cliente
+ SELECT @OkRef AS Cliente
 
 END
+end
+
 GO
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
+/***************************************************************/
+/********************xpCA_BuquedaClinteSK***********************/
+/***************************************************************/
+
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_BuquedaClinteSK') AND TYPE = 'P')
+DROP PROCEDURE dbo.xpCA_BuquedaClinteSK;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
- Creaci�n: 27/01/2021
- Descripci�n: Busqueda de clientes existentes en Intelisis
- Ejemplo: EXEC xpCA_BuquedaClinteSK 'Nombre','Apellido1','Apellido2' � EXEC xpCA_BuquedaClinteSK 'Nombre Apellido1 Apellido2'
- Par�metros: Nombre, Apaterno,Amaterno
+ Creación: 27/01/2021
+ Descripción: Busqueda de clientes existentes en Intelisis
+ Ejemplo: EXEC xpCA_BuquedaClinteSK 'Nombre','Apellido1','Apellido2' ó EXEC xpCA_BuquedaClinteSK 'Nombre Apellido1 Apellido2'
+ Parámetros: Nombre, Apaterno,Amaterno
  Resultado: ID de Cliente en Intelisis y Nombre del Cliente
  =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_BuquedaClinteSK] (
@@ -835,13 +881,14 @@ DECLARE
 	SELECT TOP 10 * FROM PosiblesCTE
 
 END
-GO
 
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
+GO
+/***************************************************************/
+/********************xpCA_GenerarCitaSePa***********************/
+/***************************************************************/
 
 IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_GenerarCitaSePa') AND TYPE = 'P')
-	drop procedure dbo.xpCA_GenerarCitaSePa;
+DROP PROCEDURE dbo.xpCA_GenerarCitaSePa;
 GO
 SET ANSI_NULLS OFF
 GO
@@ -856,7 +903,7 @@ GO
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_GenerarCitaSePa] (@ID int)
 AS
-BEGIN
+BEGIN  
 SET NOCOUNT ON
 DECLARE
 @Usuario		VARCHAR(25),
@@ -902,7 +949,7 @@ BEGIN TRY
 	BEGIN
 		SELECT @Usuario=UsuarioSePaCS,@AgenteServicio=AgenteServicio FROM CA_sepa_conf_correo WHERE Sucursal=@Sucursal
 	END
-
+	
 	IF @Cliente LIKE 'SKS%'---- CLIENTE QUE ES EXCLUSIVO PARA SEEKOP
 	BEGIN
 		
@@ -910,7 +957,12 @@ BEGIN TRY
 		/*Se buscan los parametros configurados en la ventana de Interfaces por sucursal y extrae el valor configurado*/
 		IF @Agente IN ('AgenteDef','')
 		BEGIN
-			SELECT @Agente=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKAgenteDefaultSeekop')---Agregar funcion de recoleccion de parametro por interfaz
+			--SELECT @Agente=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKAgenteDefaultSeekop')---Agregar funcion de recoleccion de parametro por interfaz
+			SELECT top 1 @Agente=Agente.Agente FROM Agente 
+			INNER JOIN JornadaTiempo AS JT ON JT.Jornada=Agente.Jornada
+			WHERE Agente.Jornada is not null and Tipo='Asesor' AND Estatus='ALTA' and sucursalempresa=@Sucursal
+			AND YEAR(Fecha) = YEAR(GETDATE()) AND MONTH(Fecha) = MONTH(GETDATE())
+			ORDER BY NEWID()
 		END
 		
 		SELECT @Usuario=dbo.fnCA_CatParametrosSucursalValor(@Sucursal,'SKUsuario')
@@ -927,7 +979,7 @@ BEGIN TRY
 			SELECT TOP 1 @Concepto=Concepto FROM Venta where Mov='cita Servicio' AND Concepto LIKE 'Publico%' order by ID  desc	
 		END
 		/*CLIENTE EXCLUSIVO DE SEEKOP EN LA AGENCIA*/
-		
+		--SELECT @HoraRecepcion,@Fecha,@Hora,@Sucursal,@Agente,@Cliente,@Usuario,@AgenteServicio,@ClienteSK,@SArt,@SModelo,@SPlacas,@SVin,@ArticuloPaquete,@Concepto,@SDesArt
 		INSERT INTO Venta
 		(Empresa,Mov,FechaEmision,Concepto,UEN,Moneda,TipoCambio,Usuario,Estatus,Cliente,Almacen,Agente,FechaRequerida,HoraRequerida,HoraRecepcion
 		,Condicion,ServicioArticulo,ServicioSerie,ServicioPlacas,ServicioKms,Ejercicio,Periodo,ListaPreciosEsp,Sucursal,Comentarios,SucursalOrigen,ServicioTipoOrden,ServicioTipoOperacion,ServicioModelo,ServicioNumeroEconomico,ServicioDescripcion,AgenteServicio)
@@ -938,7 +990,6 @@ BEGIN TRY
 		WHERE ID=@ID			
 		
 		SELECT @GenerarID=IDENT_CURRENT('Venta')	
-
 
 		/*Buscar informacion de Cliente SK para insertar en CA_Venta*/
 		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CA_Venta' AND TABLE_SCHEMA = 'dbo')/*Revisa si trae la nomenclatura CA_ en la tabla para buscar tablas de la V6000 */
@@ -967,13 +1018,17 @@ BEGIN TRY
 
 
 	/*Afectamos la CS*/
-	EXEC spAfectar 'VTAS', @GenerarID, 'AFECTAR', 'Todo', NULL, @Usuario, @Estacion=1000,@EnSilencio=1,@Ok=@OK OUTPUT,@OkRef=@OkRef OUTPUT
+	--EXEC spAfectar 'VTAS', @GenerarID, 'AFECTAR', 'Todo', NULL, @Usuario, @Estacion=1000,@EnSilencio=1,@Ok=@OK OUTPUT,@OkRef=@OkRef OUTPUT--comentado para test de envio de borrador
+
+	-- Se insertan los IDS en la tabla para posteriormente se recorran dentro del JOB xpCA_ConfirmarCitaSeekop y se actaulicen los datos de las tablas CA_LogMovimientosInterfaz y CA_LogMovimientosInterfazD
+	INSERT INTO CA_IDSPendientesConfirmarCita (IDVenta,Estatus,FechaProcesamiento) VALUES(@GenerarID,'SINPROCESAR', GETDATE())
+
 	UPDATE Venta SET FechaEmision=@Fecha,HoraRecepcion=@Hora WHERE ID=@GenerarID
 	/*Buscamos que la cita Servicio que creamos este por confirmar*/
 		
-	IF EXISTS(SELECT * FROM Venta WHERE ID=@GenerarID AND Estatus IN ('CONFIRMAR'))
+	IF EXISTS(SELECT * FROM Venta WHERE ID=@GenerarID )--AND Estatus IN ('CONFIRMAR'))
 	BEGIN
-		SELECT MovID AS Folio, '' AS OkRef FROM Venta WHERE ID=@GenerarID
+		SELECT /*MovID*/ CONVERT(VARCHAR(10),@GenerarID) AS Folio, '' AS OkRef FROM Venta WHERE ID=@GenerarID
 		UPDATE CA_log_sepa_citas SET Estatus='CONFIRMAR',Id_CitaIntelisis=@GenerarID WHERE Id=@ID
 
 		IF @Cliente LIKE 'SKS%'
@@ -1000,8 +1055,12 @@ BEGIN TRY
 				ISNULL(Horas,1),Articulo,Impuesto1,Descripcion1,ISNULL(Horas,1),ISNULL(Horas,1) 
 				FROM ART WHERE ARTICULO=@ArticuloPaquete
 			END
-		END
+		END 
 	END
+
+	--SET @OkRef=  CONVERT(VARCHAR(10),@GenerarID)--GTS CAMBIO PARA MANDAR EL ID DE LA INSERCION DE VENTA Y NO EL FOLIO GENERADO
+
+
 END TRY
 BEGIN CATCH
 	SELECT @OK=1065, @OkRef = ERROR_MESSAGE()+' '+ CONVERT(VARCHAR(100),ERROR_LINE()) 
@@ -1022,18 +1081,23 @@ END CATCH
 		
 END
 GO
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
+/****************************************************************/
+/********************xpCA_CancelarCitaSePa***********************/
+/****************************************************************/
+
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_CancelarCitaSePa') AND TYPE = 'P')
+DROP PROCEDURE dbo.xpCA_CancelarCitaSePa;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo 
--- Creaci�n: 12/02/2021
+-- Creación: 12/02/2021
 -- Ejemplo: EXC xpCA_CancelarCitaSePa 1 C2012
--- Descripci�n: Cancelacion de Citas 
--- Par�metros: Id del registro en el log de citas y folio de la Cita
+-- Descripción: Cancelacion de Citas 
+-- Parámetros: Id del registro en el log de citas y folio de la Cita
 -- Resultado: Estatus de cancelacion Exitosa.
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_CancelarCitaSePa] (@ID INT,@Folio VARCHAR(20) )
@@ -1092,19 +1156,25 @@ DECLARE
 		ROLLBACK TRANSACTION
 
 END
+
 GO
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
+/***************************************************************************/
+/********************xpCA_ActualizacionEstatusMonitor***********************/
+/***************************************************************************/
+
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_ActualizacionEstatusMonitor') AND TYPE = 'P')
+DROP PROCEDURE dbo.xpCA_ActualizacionEstatusMonitor;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo Silvas
--- Creaci�n: 12/02/2021
+-- Creación: 12/02/2021
 -- Ejemplo: EXC xpCA_ActualizacionEstatusMonitor 682293
--- Descripci�n: Actualizacion de CA_LogMovimientosInterfaz Actualiza los estatus en el monitor
--- Par�metros: Id del registro en el log de citas y folio de la Cita
+-- Descripción: Actualizacion de CA_LogMovimientosInterfaz Actualiza los estatus en el monitor
+-- Parámetros: Id del registro en el log de citas y folio de la Cita
 -- Resultado: Estatus de cancelacion Exitosa.
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_ActualizacionEstatusMonitor]( @ID INT)
@@ -1127,18 +1197,23 @@ DECLARE
 	END
 
 END
-GO
 
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
+GO
+/****************************************************************/
+/********************xpCA_ConcluirCitaSePa***********************/
+/****************************************************************/
+
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_ConcluirCitaSePa') AND TYPE = 'P')
+DROP PROCEDURE dbo.xpCA_ConcluirCitaSePa;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
  Autor:Giovanni Trujillo Silvas
- Creaci�n: 25/05/2020
- Descripci�n:Cambio de estatus para citas en la API SePa
+ Creación: 25/05/2020
+ Descripción:Cambio de estatus para citas en la API SePa
 */
 CREATE PROCEDURE [dbo].[xpCA_ConcluirCitaSePa](@ID	INT)
 AS
@@ -1203,12 +1278,14 @@ DECLARE
 	END
 
 END
-GO
 
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
+GO
+/*************************************************************/
+/********************xpCA_SlotsHorarios***********************/
+/*************************************************************/
+
 IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_SlotsHorarios') AND TYPE = 'P')
-	drop procedure dbo.xpCA_SlotsHorarios;
+DROP PROCEDURE dbo.xpCA_SlotsHorarios;
 GO
 SET ANSI_NULLS OFF
 GO
@@ -1216,10 +1293,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo Silvas
--- Creaci�n: 27/06/2021
+-- Creación: 27/06/2021
 -- Ejemplo:  EXEC xpCA_SlotsHorarios
--- Par�metros 
--- Descripci�n:Genera los horarios disponibles para los agentes en un rango de 60 dias
+-- Parámetros 
+-- Descripción:Genera los horarios disponibles para los agentes en un rango de 60 dias
 */
 CREATE PROCEDURE [dbo].[xpCA_SlotsHorarios]
 AS
@@ -1236,13 +1313,22 @@ DECLARE
 @Fin			VARCHAR(5),
 @Sucursal INT
 
-TRUNCATE TABLE CA_SlotHorarios
 
 CREATE TABLE #Horario (
 Agente VARCHAR(20),
 Fecha DATE,
 Hora VARCHAR(5)
 )
+
+CREATE TABLE #CA_SlotHorarios(
+	[Fecha] [date] NOT NULL,
+	[DiaHabil] [bit] NOT NULL,
+	[Inicio] [varchar](5) NOT NULL,
+	[Fin] [varchar](5) NOT NULL,
+	[Disponible] [bit] NOT NULL,
+	[Sucursal] [int] NOT NULL
+) 
+
 
 DECLARE Horarios CURSOR FOR   
 SELECT Sucursal FROM Sucursal WHERE Sucursal%2=1
@@ -1262,7 +1348,7 @@ BEGIN
 		--SELECT @Day,@Month,@Year
 
 
-		DELETE FROM #Horario 
+		DELETE FROM #Horario
 		INSERT INTO #Horario
 		EXEC xpCA_HorarioAgente @Sucursal,@Year,@Month,@Day,'SePaSlot'
 
@@ -1276,7 +1362,7 @@ BEGIN
 		
 			IF @Hora < @Fin
 			BEGIN
-				INSERT INTO CA_SlotHorarios
+				INSERT INTO #CA_SlotHorarios
 				SELECT @Fecha,0,@Hora ,CONVERT(varchar(5),DATEADD( MI ,@Recepcion,ISNULL(@Hora,@Inicio)), 108),0,@Sucursal
 			END
 
@@ -1285,7 +1371,7 @@ BEGIN
 		UPDATE #Horario SET Agente=''
 	
 		UPDATE SH SET SH.Disponible=1
-		FROM CA_SlotHorarios AS SH 
+		FROM #CA_SlotHorarios AS SH 
 		INNER JOIN #Horario AS H ON H.Fecha=SH.fecha AND H.Hora=SH.Inicio
 		WHERE SH.Sucursal=@Sucursal
 		SELECT @Dia = @Dia+1
@@ -1299,22 +1385,38 @@ END
 CLOSE Horarios  
 DEALLOCATE Horarios  
 
-UPDATE  CA_SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM CA_SlotHorarios WHERE Disponible=1) 
+
+
+UPDATE  #CA_SlotHorarios SET DiaHabil=1  WHERE Fecha IN (SELECT DISTINCT Fecha FROM #CA_SlotHorarios WHERE Disponible=1) 
+
+
+TRUNCATE TABLE CA_SlotHorarios
+
+INSERT INTO CA_SlotHorarios
+
+SELECT * FROM #CA_SlotHorarios
+
 
 END
-GO
-/************************************************************************************************************************************************************************************
-************************************************************************************************************************************************************************************/
 
+
+GO
+/*************************************************************************************/
+/********************xpCA_DespuesAfectarAgendamientoCitasSeekop***********************/
+/*************************************************************************************/
+
+IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_DespuesAfectarAgendamientoCitasSeekop') AND TYPE = 'P')
+DROP PROCEDURE dbo.xpCA_DespuesAfectarAgendamientoCitasSeekop;
+GO
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 /* =============================================
 -- Autor:Giovanni Trujillo 
--- Creaci�n: 17/06/2020
--- Descripci�n: Validaciones y acciones que se detonaran para seekop despues de afectaciones
--- Par�metros: todos los parametros del DespuesAfectar
+-- Creación: 17/06/2020
+-- Descripción: Validaciones y acciones que se detonaran para seekop despues de afectaciones
+-- Parámetros: todos los parametros del DespuesAfectar
 -- =============================================*/
 CREATE PROCEDURE [dbo].[xpCA_DespuesAfectarAgendamientoCitasSeekop](
 @Modulo          char(5) ,      
@@ -1354,6 +1456,5 @@ DECLARE
 		END
 	END
 END
+
 GO
---EXEC xpCA_SlotsHorarios 
---SELECT * FROM SlotHorarios where fecha='29/06/2021'
