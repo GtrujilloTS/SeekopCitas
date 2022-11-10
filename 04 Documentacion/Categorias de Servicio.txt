@@ -1,0 +1,108 @@
+{
+   "categorias": [
+        {
+            "id": "CT001",
+            "categoria": "Servicio de mantenimiento",
+            "tipos": [
+                {
+                    "id": "101",
+                    "nombre": "6 meses y/o 10,000 Km"
+                },
+                {
+                    "id": "102",
+                    "nombre": "12 meses y/o 20,000 Km"
+                },
+                {
+                    "id": "103",
+                    "nombre": "18 meses y/o 30,000 Km"
+                },
+                {
+                    "id": "104",
+                    "nombre": "24 meses y/o 40,000 Km"
+                },
+                {
+                    "id": "105",
+                    "nombre": "30 meses y/o 50,000 Km"
+                },
+                {
+                    "id": "106",
+                    "nombre": "36 meses y/o 60,000 Km"
+                },
+                {
+                    "id": "107",
+                    "nombre": "Más de 60,000 Km"
+                }
+            ]
+        },
+        {
+            "id": "CT002",
+            "categoria": "Servicio Express",
+            "tipos": [
+                {
+                    "id": "108",
+                    "nombre": "6 meses y/o 10,000 Km"
+                },
+                {
+                    "id": "109",
+                    "nombre": "18 meses y/o 30,000 Km"
+                },
+                {
+                    "id": "110",
+                    "nombre": "30 meses y/o 40,000 Km"
+                }
+            ]
+        },
+        {
+            "id": "CT003",
+            "categoria": "Servicio de reparación",
+            "tipos": [
+                {
+                    "id": "111",
+                    "nombre": "Reparación mecánica y/o eléctrica"
+                },
+                {
+                    "id": "112",
+                    "nombre": "Hojalatería y pintura"
+                },
+                {
+                    "id": "113",
+                    "nombre": "Instalación de accesorios"
+                }
+            ]
+        },
+        {
+            "id": "CT004",
+            "categoria": "Otro tipo de servicio",
+            "tipos": [
+                {
+                    "id": "114",
+                    "nombre": "Llantas"
+                },
+                {
+                    "id": "115",
+                    "nombre": "Baterías"
+                },
+                {
+                    "id": "116",
+                    "nombre": "Balatas/Frenos"
+                },
+                {
+                    "id": "117",
+                    "nombre": "Limpieza del motor"
+                },
+                {
+                    "id": "118",
+                    "nombre": "Pulido y encerado"
+                },
+                {
+                    "id": "119",
+                    "nombre": "Recambio de aire acondicionado"
+                },
+                {
+                    "id": "120",
+                    "nombre": "Llamados de revisión"
+                }
+            ]
+        }
+    ]
+}
