@@ -86,20 +86,84 @@ Otro=(Fin)
 
 
 
+
+
+
+
+
+
+
+
+
+[nombre]
+Clave=nombre
+Nombre=Nombre
+Visible=S
+TamanoValidacion=100
+TipoDatos=Texto
+Tamano=100
+
+[Descripcion_en]
+Clave=Descripcion_en
+Nombre=Descripcion_en
+Visible=S
+OpcionesColumnas=1
+OpcionesRenglones=8
+TamanoValidacion=100
+TipoDatos=Texto
+Tamano=100
+
+[Grupo_en]
+Clave=Grupo_en
+Nombre=Grupo_en
+Visible=S
+OpcionesColumnas=1
+OpcionesRenglones=8
+TamanoValidacion=20
+TipoDatos=Texto
+Tamano=20
+
+[Interfaz]
+Clave=Interfaz
+Nombre=Interfaz
+Visible=S
+OpcionesColumnas=1
+OpcionesRenglones=8
+TamanoValidacion=100
+TipoDatos=Texto
+Tamano=100
+
+
+
+
+
+
+
+
+
+
 [Tabla.ListaCampos]
 (Inicio)=ID
 ID=Clave
 Clave=Descripcion
 Descripcion=Grupo
-Grupo=(Fin)
+Grupo=nombre
+nombre=Descripcion_en
+Descripcion_en=Grupo_en
+Grupo_en=Interfaz
+Interfaz=(Fin)
 
 [Tabla.SQL]
 (Inicio)=SELECT
 SELECT=ID,
 ID,=Clave,
 Clave,=Descripcion,
-Descripcion,=Grupo
-Grupo=FROM CA_SKPaquetes
+Descripcion,=Grupo,
+Grupo,=nombre,
+nombre,=Descripcion_en,
+Descripcion_en,=Grupo_en,
+Grupo_en,=Interfaz
+Interfaz=FROM CA_SKPaquetes
 FROM CA_SKPaquetes=(Fin)
 
 [Tabla.CamposBusquedaRapida]

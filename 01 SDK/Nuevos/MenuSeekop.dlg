@@ -1,7 +1,7 @@
 
 [Dialogo]
 Clave=MenuSeekop
-Nombre=Menú
+Nombre=Configuraciones para Agendamiento Citas
 Icono=14
 TipoDialogo=Menú
 Modulos=(Todos)
@@ -12,6 +12,8 @@ AccionesTamanoBoton=15x5
 AccionesDerecha=S
 
 ListaAcciones=(Lista)
+PosicionInicialAlturaCliente=128
+PosicionInicialAncho=500
 [Acciones.CatControl]
 Nombre=CatControl
 Boton=0
@@ -64,7 +66,30 @@ AccionSecTextoFuente={MS Sans Serif, 8, Negro, []}
 AccionSecColor=Plata
 AccionSecAli=Izquierda
 
+
+
+
+[Acciones.AgenteRecepcion]
+Nombre=AgenteRecepcion
+Boton=0
+NombreEnBoton=S
+NombreDesplegar=Horarios de Agentes para Recepcion
+EnMenu=S
+EnBarraAcciones=S
+EspacioPrevio=S
+TipoAccion=Formas
+ClaveAccion=CA_HorarioAgenteRecepcion
+Activo=S
+Visible=S
+
+
+
+
+
+
+
 [Dialogo.ListaAcciones]
 (Inicio)=CatControl
 CatControl=SKClientes
-SKClientes=(Fin)
+SKClientes=AgenteRecepcion
+AgenteRecepcion=(Fin)

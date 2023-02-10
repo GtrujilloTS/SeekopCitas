@@ -68,12 +68,16 @@ Descripcion VARCHAR(100),
 -- Creación: 04/02/2021
 -- Descripción: Tabla para almacenamiento de Paquetes para Seekop 
 -- =============================================*/
-CREATE TABLE CA_SKPaquetes(
-ID INT IDENTITY,
-Clave VARCHAR(20),
-Descripcion VARCHAR(100),
-Grupo VARCHAR(20)
-);
+CREATE TABLE [dbo].[CA_SKPaquetes](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Clave] [varchar](20) NOT NULL,
+	[Descripcion] [varchar](100) NOT NULL,
+	[Grupo] [varchar](20) NOT NULL,
+	[nombre] [varchar](100) NULL,
+	[Descripcion_en] [varchar](100) NULL,
+	[Grupo_en] [varchar](20) NULL,
+	[Interfaz] [varchar](100) NULL
+) ON [PRIMARY]
 
 GO
 

@@ -63,18 +63,69 @@ AlCambiar=Info.Articulo
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+[Descripcion_en]
+Clave=Descripcion_en
+Nombre=Descripcion_en
+Visible=S
+OpcionesColumnas=1
+OpcionesRenglones=8
+TamanoValidacion=100
+TipoDatos=Texto
+Tamano=100
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Interfaz]
+Clave=Interfaz
+Nombre=Interfaz
+Visible=S
+OpcionesColumnas=1
+OpcionesRenglones=8
+TamanoValidacion=100
+TipoDatos=Texto
+Tamano=100
+
+
+
+
 [Tabla.ListaCampos]
 (Inicio)=ID
 ID=Clave
 Clave=Descripcion
-Descripcion=(Fin)
+Descripcion=Descripcion_en
+Descripcion_en=Interfaz
+Interfaz=(Fin)
 
 [Tabla.SQL]
 (Inicio)=SELECT
 SELECT=ID,
 ID,=Clave,
-Clave,=Descripcion
-Descripcion=FROM CA_SKModeloVehiculos
+Clave,=Descripcion,
+Descripcion,=Descripcion_en,
+Descripcion_en,=Interfaz
+Interfaz=FROM CA_SKModeloVehiculos
 FROM CA_SKModeloVehiculos=(Fin)
 
 [Tabla.CamposBusquedaRapida]

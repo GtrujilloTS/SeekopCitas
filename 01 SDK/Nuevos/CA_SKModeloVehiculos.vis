@@ -13,42 +13,64 @@ UsarJOIN=S
 ListaCampos=(Lista)
 TablaPrincipal=CA_SKModeloVehiculos
 CamposBusquedaRapida=(Lista)
+
+
+
+
+
+
+
+
+
+
+
+
+
 SQL=(Lista)
 [CA_SKModeloVehiculos.ID]
 Clave=CA_SKModeloVehiculos.ID
-Nombre=ID
-OpcionesColumnas=1
-OpcionesRenglones=8
-TamanoValidacion=10
-TipoDatos=AutoInc
-Visible=S
 LigaTabla=CA_SKModeloVehiculos
 LigaCampo=ID
 Ligado=S
 TipoCampo=Tabla
+TipoDatos=AutoInc
 ClaveBDE=ID
 
 [CA_SKModeloVehiculos.Clave]
-AyudaCampo=Art.Articulo
-AyudaEnCaptura=Vista
-AyudaForma=ArtLista
-AyudaVista=Art
 Clave=CA_SKModeloVehiculos.Clave
-Nombre=Clave
-Tamano=20
-TamanoValidacion=20
-TipoDatos=Texto
-Visible=S
 LigaTabla=CA_SKModeloVehiculos
 LigaCampo=Clave
 Ligado=S
 TipoCampo=Tabla
+TipoDatos=Texto
+Tamano=20
 Requerido=S
 ClaveBDE=Clave
 
 [CA_SKModeloVehiculos.Descripcion]
 Clave=CA_SKModeloVehiculos.Descripcion
-Nombre=Descripcion
+LigaTabla=CA_SKModeloVehiculos
+LigaCampo=Descripcion
+Ligado=S
+TipoCampo=Tabla
+TipoDatos=Texto
+Tamano=100
+Requerido=S
+ClaveBDE=Descripcion
+
+[CA_SKModeloVehiculos.Descripcion_en]
+Clave=CA_SKModeloVehiculos.Descripcion_en
+LigaTabla=CA_SKModeloVehiculos
+LigaCampo=Descripcion_en
+Ligado=S
+TipoCampo=Tabla
+TipoDatos=Texto
+Tamano=100
+ClaveBDE=Descripcion_en
+
+[CA_SKModeloVehiculos.Interfaz]
+Clave=CA_SKModeloVehiculos.Interfaz
+Nombre=Interfaz
 OpcionesColumnas=1
 OpcionesRenglones=8
 Tamano=100
@@ -56,11 +78,13 @@ TamanoValidacion=100
 TipoDatos=Texto
 Visible=S
 LigaTabla=CA_SKModeloVehiculos
-LigaCampo=Descripcion
+LigaCampo=Interfaz
 Ligado=S
 TipoCampo=Tabla
-Requerido=S
-ClaveBDE=Descripcion
+ClaveBDE=Interfaz
+
+
+
 
 
 
@@ -69,17 +93,22 @@ ClaveBDE=Descripcion
 (Inicio)=CA_SKModeloVehiculos.ID
 CA_SKModeloVehiculos.ID=CA_SKModeloVehiculos.Clave
 CA_SKModeloVehiculos.Clave=CA_SKModeloVehiculos.Descripcion
-CA_SKModeloVehiculos.Descripcion=(Fin)
+CA_SKModeloVehiculos.Descripcion=CA_SKModeloVehiculos.Descripcion_en
+CA_SKModeloVehiculos.Descripcion_en=CA_SKModeloVehiculos.Interfaz
+CA_SKModeloVehiculos.Interfaz=(Fin)
 
 [Vista.SQL]
 (Inicio)=SELECT
 SELECT=CA_SKModeloVehiculos.ID,
 CA_SKModeloVehiculos.ID,=CA_SKModeloVehiculos.Clave,
-CA_SKModeloVehiculos.Clave,=CA_SKModeloVehiculos.Descripcion
-CA_SKModeloVehiculos.Descripcion=FROM CA_SKModeloVehiculos
+CA_SKModeloVehiculos.Clave,=CA_SKModeloVehiculos.Descripcion,
+CA_SKModeloVehiculos.Descripcion,=CA_SKModeloVehiculos.Descripcion_en,
+CA_SKModeloVehiculos.Descripcion_en,=CA_SKModeloVehiculos.Interfaz
+CA_SKModeloVehiculos.Interfaz=FROM CA_SKModeloVehiculos
 FROM CA_SKModeloVehiculos=(Fin)
 
 [Vista.CamposBusquedaRapida]
 (Inicio)=CA_SKModeloVehiculos.Clave
 CA_SKModeloVehiculos.Clave=CA_SKModeloVehiculos.Descripcion
-CA_SKModeloVehiculos.Descripcion=(Fin)
+CA_SKModeloVehiculos.Descripcion=CA_SKModeloVehiculos.Descripcion_en
+CA_SKModeloVehiculos.Descripcion_en=(Fin)

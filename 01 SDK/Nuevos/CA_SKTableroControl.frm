@@ -3,14 +3,14 @@
 Clave=CA_SKTableroControl
 Icono=24
 Modulos=(Todos)
-Nombre=Tablero de Control Seekop
+Nombre=Tablero de Control Citas
 
 ListaCarpetas=(Lista)
 CarpetaPrincipal=Vehiculos
-PosicionInicialIzquierda=125
-PosicionInicialArriba=14
-PosicionInicialAlturaCliente=244
-PosicionInicialAncho=989
+PosicionInicialIzquierda=-8
+PosicionInicialArriba=-8
+PosicionInicialAlturaCliente=701
+PosicionInicialAncho=1382
 BarraHerramientas=S
 AccionesTamanoBoton=15x5
 AccionesDerecha=S
@@ -19,7 +19,7 @@ ListaAcciones=(Lista)
 Estilo=Hoja
 Pestana=S
 PestanaOtroNombre=S
-PestanaNombre=Vehiculos para Seekop
+PestanaNombre=Vehiculos
 Clave=Vehiculos
 PermiteEditar=S
 AlineacionAutomatica=S
@@ -85,6 +85,7 @@ ColorFondo=Blanco
 Clave=124
 Descripcion=604
 
+Descripcion_en=604
 [Acciones.Guardar]
 Nombre=Guardar
 Boton=3
@@ -115,10 +116,6 @@ AccionSecAli=Izquierda
 
 
 
-[Vehiculos.ListaEnCaptura]
-(Inicio)=CA_SKModeloVehiculos.Clave
-CA_SKModeloVehiculos.Clave=CA_SKModeloVehiculos.Descripcion
-CA_SKModeloVehiculos.Descripcion=(Fin)
 
 [Acciones.Cerrar]
 Nombre=Cerrar
@@ -166,7 +163,7 @@ EspacioPrevio=S
 Estilo=Hoja
 Pestana=S
 PestanaOtroNombre=S
-PestanaNombre=Paquetes para Seekop
+PestanaNombre=Paquetes o Servicios
 Clave=Paquete
 PermiteEditar=S
 AlineacionAutomatica=S
@@ -245,11 +242,178 @@ ColorFondo=Blanco
 
 
 
+
+[Paquete.Columnas]
+Grupo=124
+Clave=124
+Descripcion=604
+
+
+
+nombre=604
+Descripcion_en=604
+Grupo_en=124
+
+[AgentesRecepcion.CA_HorarioAgenteRecepcion.Agente]
+Carpeta=AgentesRecepcion
+Clave=CA_HorarioAgenteRecepcion.Agente
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=10
+ColorFondo=Blanco
+
+[AgentesRecepcion.CA_HorarioAgenteRecepcion.Nombre]
+Carpeta=AgentesRecepcion
+Clave=CA_HorarioAgenteRecepcion.Nombre
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=200
+ColorFondo=Blanco
+
+Editar=S
+[AgentesRecepcion.CA_HorarioAgenteRecepcion.HoraInicio]
+Carpeta=AgentesRecepcion
+Clave=CA_HorarioAgenteRecepcion.HoraInicio
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=5
+ColorFondo=Blanco
+
+[AgentesRecepcion.CA_HorarioAgenteRecepcion.HoraFin]
+Carpeta=AgentesRecepcion
+Clave=CA_HorarioAgenteRecepcion.HoraFin
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=5
+ColorFondo=Blanco
+
+
+
+[AgentesRecepcion.Columnas]
+Agente=64
+Nombre=576
+HoraInicio=52
+HoraFin=41
+
+
+NombreSucursal=184
+[Lista.Columnas]
+0=105
+1=247
+
+
+
+
+
+
+
+
+
+
+Articulo=131
+Descripcion1=244
+
+
+
+
+
+
+
+
+[Vehiculos.CA_SKModeloVehiculos.Descripcion_en]
+Carpeta=Vehiculos
+Clave=CA_SKModeloVehiculos.Descripcion_en
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=100
+ColorFondo=Blanco
+
+
+[Paquete.CA_SKPaquetes.nombre]
+Carpeta=Paquete
+Clave=CA_SKPaquetes.nombre
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=100
+ColorFondo=Blanco
+
+[Paquete.CA_SKPaquetes.Descripcion_en]
+Carpeta=Paquete
+Clave=CA_SKPaquetes.Descripcion_en
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=100
+ColorFondo=Blanco
+
+[Paquete.CA_SKPaquetes.Grupo_en]
+Carpeta=Paquete
+Clave=CA_SKPaquetes.Grupo_en
+Editar=S
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=20
+ColorFondo=Blanco
+
+
+
+
+[AgentesRecepcion.ListaEnCaptura]
+(Inicio)=CA_HorarioAgenteRecepcion.Agente
+CA_HorarioAgenteRecepcion.Agente=CA_HorarioAgenteRecepcion.Nombre
+CA_HorarioAgenteRecepcion.Nombre=NombreSucursal
+NombreSucursal=CA_HorarioAgenteRecepcion.HoraInicio
+CA_HorarioAgenteRecepcion.HoraInicio=CA_HorarioAgenteRecepcion.HoraFin
+CA_HorarioAgenteRecepcion.HoraFin=(Fin)
+
+[AgentesRecepcion.NombreSucursal]
+Carpeta=AgentesRecepcion
+Clave=NombreSucursal
+LineaNueva=S
+ValidaNombre=S
+3D=S
+Tamano=30
+ColorFondo=Blanco
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Vehiculos.ListaEnCaptura]
+(Inicio)=CA_SKModeloVehiculos.Clave
+CA_SKModeloVehiculos.Clave=CA_SKModeloVehiculos.Descripcion
+CA_SKModeloVehiculos.Descripcion=CA_SKModeloVehiculos.Descripcion_en
+CA_SKModeloVehiculos.Descripcion_en=(Fin)
+
 [Paquete.ListaEnCaptura]
 (Inicio)=CA_SKPaquetes.Grupo
 CA_SKPaquetes.Grupo=CA_SKPaquetes.Clave
 CA_SKPaquetes.Clave=CA_SKPaquetes.Descripcion
-CA_SKPaquetes.Descripcion=(Fin)
+CA_SKPaquetes.Descripcion=CA_SKPaquetes.nombre
+CA_SKPaquetes.nombre=CA_SKPaquetes.Descripcion_en
+CA_SKPaquetes.Descripcion_en=CA_SKPaquetes.Grupo_en
+CA_SKPaquetes.Grupo_en=(Fin)
 
 
 
