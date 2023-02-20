@@ -4,21 +4,45 @@
 -- Creación: 10/02/2021
 -- Descripción: Tabla para almacenamiento de datos Seekop en Venta 
 -- =============================================*/
-CREATE TABLE CA_Venta
-(
-ID INT NULL,
-SKCte VARCHAR(20)NULL,
-SKNombreCompleto VARCHAR(100)NULL,
-SKNombres VARCHAR(50)NULL,
-SKAPaterno VARCHAR(50)NULL,
-SKAMaterno VARCHAR(50)NULL,
-SKArtVehiculo VARCHAR(20)NULL,
-SKArtPaquete VARCHAR(20)NULL,
-SKModelo VARCHAR(20)NULL,
-SKPlacas VARCHAR(20)NULL,
-SKVin VARCHAR(20)NULL
-);
+
+SET ANSI_NULLS OFF
 GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+IF NOT EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.CA_Venta') AND TYPE = 'U')
+BEGIN
+
+	CREATE TABLE [dbo].[CA_Venta](
+		[IdVenta] [int] NOT NULL   ------------Este sera el ID que se usara para hacer referencia al ID de la tabla Venta
+		) ON [PRIMARY]
+END
+GO
+
+
+
+EXEC spALTER_TABLE 'CA_Venta', 'Id_OportunidadLX', 'varchar(100) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'IdProspecto', 'varchar(200) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'IDValuacion', 'int NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKCte', 'varchar(20) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKNombreCompleto', 'varchar(100) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKNombres', 'varchar(50) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKAPaterno', 'varchar(50) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKAMaterno', 'varchar(50) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKArtVehiculo', 'varchar(20) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKArtPaquete', 'varchar(20) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKModelo', 'varchar(20) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKPlacas', 'varchar(20) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'SKVin', 'varchar(20) NULL'
+EXEC spALTER_TABLE 'CA_Venta', 'AcordeManual', 'bit NULL DEFAULT ((0))'
+EXEC spALTER_TABLE 'CA_Venta', 'NoAcordeManual', 'bit NULL DEFAULT ((0))'
+EXEC spALTER_TABLE 'CA_Venta', 'NoAplica', 'bit NULL DEFAULT ((0))'
+EXEC spALTER_TABLE 'CA_Venta', 'FechaAcordeManual', 'datetime  NULL DEFAULT (NULL)'
+EXEC spALTER_TABLE 'CA_Venta', 'Reasignado', 'bit NULL DEFAULT ((0))'
+EXEC spALTER_TABLE 'CA_Venta', 'FechaReasignado', 'datetime NULL DEFAULT (NULL)'
+EXEC spALTER_TABLE 'CA_Venta', 'IdVentaPilot', 'varchar(200) NULL'
+
+
 
 /* =============================================
 -- Autor:Giovanni Trujillo Silvas
