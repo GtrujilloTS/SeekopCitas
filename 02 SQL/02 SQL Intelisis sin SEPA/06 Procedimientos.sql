@@ -672,6 +672,7 @@ GO
 IF EXISTS(SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo.xpCA_GeneraClienteSC') AND TYPE = 'P')
 DROP PROCEDURE dbo.xpCA_GeneraClienteSC;
 GO
+
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
@@ -707,12 +708,14 @@ DECLARE
  
  --Implementar busqueda
  IF (@Nomre IS NOT NULL AND @APaterno IS NOT NULL )
+ BEGIN
   SELECT @Nombres=@Nomre, @Apellido1=@APaterno, @Apellido2=ISNULL(@AMaterno,'')
  
- CREATE table #Target(
-	Cliente VARCHAR(100),
-	Nombre VARCHAR(1000)
- );
+  CREATE table #Target(
+	  Cliente VARCHAR(100)Null,
+	  Nombre VARCHAR(1000) null
+    );
+ 
  INSERT INTO #Target 
  
  SELECT Cliente,Nombre FROM CA_SKClientes WHERE PersonalNombres=@Nombres AND PersonalApellidoPaterno=@Apellido1 AND  PersonalApellidoMaterno LIKE @Apellido2+'%'
@@ -727,10 +730,13 @@ DECLARE
  UNION
  SELECT Cliente,Nombre FROM CA_SKClientes WHERE Nombre LIKE @Apellido1+'% '+@Apellido2+'% '+@Nombres
  
- SELECT @Contador=count(*) from #Target
- if @Contador >0
+ SELECT @Contador=count(*) from #Target WHERE Cliente is not null
+ END 
+
+
+ if ISNULL(@Contador,0) >0
 	begin
-	SELECT TOP 10 * FROM #Target
+	SELECT TOP 10 * FROM #Target WHERE Cliente is not null
 	end
  else
 	begin
@@ -805,9 +811,9 @@ DECLARE
  SELECT @OkRef AS Cliente
 
 END
-end
-
+END
 GO
+
 /***************************************************************/
 /********************xpCA_BuquedaClinteSK***********************/
 /***************************************************************/
