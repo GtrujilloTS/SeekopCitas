@@ -105,7 +105,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 -- =============================================
 -- Autor:Giovanni Trujillo 
--- Parámetros: Modulo, Movimiento, Sucursal,Concepto del Movimiento
+-- Parï¿½metros: Modulo, Movimiento, Sucursal,Concepto del Movimiento
 -- Resultado: Retorna una UEN que sea valida con o sin validacion de concepto
 -- =============================================
 CREATE FUNCTION [dbo].[fnCA_GeneraUENValida](@Modulo Varchar(5),@Mov  Varchar(20),@Sucursal int,@Concepto varchar(50))
@@ -144,7 +144,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 -- =============================================
 -- Autor:Giovanni Trujillo 
--- Parámetros: Modulo, Movimiento,Sucursal
+-- Parï¿½metros: Modulo, Movimiento,Sucursal
 -- Resultado: Retorna la sucursal valida para afectacion de movimeintos
 -- =============================================
 CREATE FUNCTION [dbo].[fnCA_GeneraSucursalValida](@Modulo Varchar(5),@Mov  Varchar(20),@Sucursal int)
@@ -173,7 +173,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 -- =============================================
 -- Autor:Giovanni Trujillo 
--- Parámetros: Modulo, Movimiento,Sucursal
+-- Parï¿½metros: Modulo, Movimiento,Sucursal
 -- Resultado: Retorna el Almacen valido para afectaciones
 -- =============================================
 CREATE FUNCTION [dbo].[fnCA_GeneraAlmacenlValido](@Modulo Varchar(5),@Mov  Varchar(20),@Sucursal int)
@@ -196,3 +196,33 @@ DECLARE
 
 END
 GO
+-- =============================================
+-- Autor:Rivack Emiliano Mares Castro
+-- Parï¿½metros: String (Fecha)
+-- Resultado: Retorna la fecha descartando las fechas que no cumplen
+-- =============================================
+
+
+SET ANSI_NULLS OFF
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE FUNCTION [dbo].[fnCA_UtilitiesCheckTime](@timeString VARCHAR(50))
+RETURNS VARCHAR(5)
+AS
+BEGIN
+    DECLARE @result VARCHAR(5);
+
+    IF @timeString LIKE '[0-1][0-9]:[0-5][0-9]' -- Formato HH:MI  00:00 y 19:59
+       OR @timeString LIKE '2[0-3]:[0-5][0-9]' -- Formato HH:MI  20:00 y 23:59
+       OR @timeString LIKE '[0-9]:[0-5][0-9]' -- Formato H:MI
+    BEGIN
+            SET @result = CONVERT(TIME, @timeString)
+    END
+    ELSE
+    BEGIN
+        SET @result = NULL;
+    END
+
+    RETURN @result;
+END
